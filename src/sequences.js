@@ -1,4 +1,4 @@
-import { CONFIG, SEQUENCES, OBSTACLES } from "./config.js?v=4.1.0";
+import { CONFIG, SEQUENCES, OBSTACLES } from "./config.js?v=4.2.0";
 // Authored 6.8 s classic clusters; coop clusters reserve a safe return corridor
 // and append a classic exit pair. Actual encounter gaps are all <= 6.8 s.
 export function buildLevel(rounds = 2) {
@@ -29,7 +29,12 @@ export function buildLevel(rounds = 2) {
         });
       else
         s.pair.forEach((type, lane) =>
-          out.push({ ...common, id: ++uid, type, lane }),
+          out.push({
+            ...common,
+            id: ++uid,
+            type: round % 2 && type === "plant" ? "vine" : type,
+            lane,
+          }),
         );
       for (let lane = 0; lane < 2; lane++)
         out.push({ id: ++uid, type: "note", lane, at: at - 2, y: 50 });

@@ -16,6 +16,7 @@ export const CONFIG = {
   switchDuration: 0.35,
   switchCooldown: 3,
   cooldown: 4,
+  powerAnticipation: 0.45,
   weaponCooldown: 1.5,
   segmentSeconds: 6.8,
 };
@@ -26,10 +27,11 @@ export const OBSTACLES = {
   barrier: { w: 65, h: 124, action: "slide" },
   laser: { w: 50, h: 132, action: "slide" },
   electric: { w: 48, h: 120, owner: 0 },
-  armored: { w: 54, h: 84, owner: 1 },
+  armored: { w: 76, h: 102, owner: 1 },
   drone: { w: 54, h: 90, weapon: 0 },
   target: { w: 48, h: 66, mechanism: true },
   door: { w: 74, h: 150, locked: true },
+  vine: { w: 70, h: 95, weapon: 1 },
   plant: { w: 64, h: 105, weapon: 1 },
   giant: { w: 100, h: 180, weapon: 1 },
 };
@@ -138,4 +140,8 @@ export const WEAPON = {
   swordEnd: 0.64,
   arrowSpeed: 1600,
   bowRange: 1100,
+  muzzleX: 100,
+  muzzleHeight: 96,
 };
+
+export const DRONE = { bodyY: 290, aimY: 230, beamY: 185, width: 140 };

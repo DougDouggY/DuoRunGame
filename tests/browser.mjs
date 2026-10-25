@@ -21,10 +21,34 @@ try {
   await page.waitForFunction(() => window.duoRush);
   assert.equal(
     await page.evaluate(() => Object.keys(duoRush.renderer.assets).length),
-    18,
+    23,
   );
   assert.ok(!(await page.locator("body").innerText()).includes("SWONNI"));
   assert.ok(!(await page.title()).includes("NEON RUSH"));
+  await page.click("#inspect");
+  for (const [kind, count] of [
+    ["arrow", 1],
+    ["neon-run", 12],
+    ["neon-bow", 16],
+    ["inda-sword", 18],
+    ["inda-shield", 16],
+  ]) {
+    await page.selectOption("#preview-kind", kind);
+    await page.evaluate(() => {
+      duoRush.preview.playing = false;
+      duoRush.preview.frame = 0;
+      duoRush.preview.draw(performance.now());
+    });
+    assert.ok(
+      (await page.locator("#preview-count").innerText()).includes("/ " + count),
+    );
+    await page.click("#preview-next");
+    assert.equal(
+      await page.evaluate(() => duoRush.preview.frame),
+      count === 1 ? 0 : 1,
+    );
+  }
+  await page.click("#preview-close");
   await page.uncheck("#ai1");
   await page.selectOption("#pre-speed", "180");
   await page.click("#play");
@@ -130,7 +154,7 @@ try {
   assert.deepEqual(await page.evaluate(() => duoRush.game.ai), [true, true]);
   assert.deepEqual(errors, []);
   console.log(
-    "Chromium PASS: 18 images, V4 keys, weapons/projectile, Space-only request/confirm, 5s return/pause, 5 full AI levels, demo, landscape/switch/portrait. No console or HTTP errors.",
+    "Chromium PASS: 23 images, V4 keys, weapons/projectile, Space-only request/confirm, 5s return/pause, 5 full AI levels, demo, landscape/switch/portrait. No console or HTTP errors.",
   );
 } finally {
   await browser.close();

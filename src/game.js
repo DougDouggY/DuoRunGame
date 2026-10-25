@@ -1,6 +1,12 @@
-import { CONFIG, OBSTACLES, SEQUENCES, WEAPON } from "./config.js?v=4.1.0";
-import { buildLevel } from "./sequences.js?v=4.1.0";
-import { driveAI } from "./ai.js?v=4.1.0";
+import {
+  CONFIG,
+  OBSTACLES,
+  SEQUENCES,
+  WEAPON,
+  DRONE,
+} from "./config.js?v=4.2.0";
+import { buildLevel } from "./sequences.js?v=4.2.0";
+import { driveAI } from "./ai.js?v=4.2.0";
 const EPS = 1e-8;
 export class Game {
   constructor() {
@@ -220,6 +226,7 @@ export class Game {
     if (o.hit) return;
     o.hit = true;
     o.deathAt = this.time;
+    if (o.type === "target") o.activatedAt = this.time;
     o.deathLife = 0.6;
     this.score += o.type === "giant" ? 500 : 100;
     this.stats.breaks++;
@@ -327,12 +334,12 @@ export class Game {
           this.objects.find((o) => o.id === p.weaponTarget && !o.hit) ||
           this.findBowTarget(p);
         this.projectiles.push({
-          x: CONFIG.playerX + 75,
+          x: CONFIG.playerX + WEAPON.muzzleX,
           lane: p.lane,
           fromLane: p.lane,
-          fromY: p.y + 75,
-          y: p.y + 75,
-          originX: CONFIG.playerX + 75,
+          fromY: p.y + WEAPON.muzzleHeight,
+          y: p.y + WEAPON.muzzleHeight,
+          originX: CONFIG.playerX + WEAPON.muzzleX,
           target: target?.id ?? null,
           life: 1.4,
         });
@@ -361,7 +368,11 @@ export class Game {
         continue;
       }
       const targetY =
-        target.type === "target" ? 240 : target.type === "drone" ? 195 : 75;
+        target.type === "target"
+          ? 240
+          : target.type === "drone"
+            ? DRONE.aimY
+            : 75;
       arrow.toLane = target.lane < 0 ? 0 : target.lane;
       arrow.targetHeight = targetY;
       arrow.targetX = target.x;

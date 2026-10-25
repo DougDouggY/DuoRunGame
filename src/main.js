@@ -1,12 +1,14 @@
-import { PeerSession } from "./network.js?v=4.1.0";
-import { Game } from "./game.js?v=4.1.0";
-import { Renderer } from "./render.js?v=4.1.0";
-import { loadAssets } from "./assets.js?v=4.1.0";
+import { AnimationPreview } from "./preview.js?v=4.2.0";
+import { PeerSession } from "./network.js?v=4.2.0";
+import { Game } from "./game.js?v=4.2.0";
+import { Renderer } from "./render.js?v=4.2.0";
+import { loadAssets } from "./assets.js?v=4.2.0";
 const canvas = document.querySelector("canvas"),
   overlay = document.querySelector("#overlay");
 const game = new Game();
 const renderer = new Renderer(canvas, await loadAssets());
 renderer.resize();
+const preview = new AnimationPreview(renderer.assets);
 addEventListener("resize", () => renderer.resize());
 const network = new PeerSession(game, (status) => {
   document.querySelector("#network-status").textContent = status;
@@ -19,7 +21,7 @@ const network = new PeerSession(game, (status) => {
     document.querySelector("#ai1").checked = false;
   }
 });
-window.duoRush = { game, renderer, network };
+window.duoRush = { game, renderer, network, preview };
 window.neonRush = window.duoRush; // Existing developer tooling compatibility.
 let muted = true,
   audio = new Audio(),
@@ -105,6 +107,7 @@ addEventListener("keydown", (e) => {
     e.target instanceof HTMLSelectElement
   )
     return;
+  if (document.querySelector("dialog[open]")) return;
   const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
   if (keys[key] || key === "Escape") e.preventDefault();
   if (e.repeat) return;
@@ -179,6 +182,7 @@ function frame(now) {
   last = now;
   for (const event of game.events.splice(0)) beep(event);
   renderer.draw(game);
+  preview.draw(now);
   if (["over", "win"].includes(game.status)) {
     overlay.classList.remove("hidden");
     overlay.querySelector("h1").textContent =
@@ -223,4 +227,9 @@ document.querySelector("#disconnect").onclick = () => {
   document.querySelector("#signal-out").value = "";
   document.querySelector("#network-status").textContent =
     "Déconnecté. Coop locale disponible.";
+};
+
+document.querySelector("#inspect").onclick = () => {
+  if (game.status === "running") pause();
+  preview.open();
 };

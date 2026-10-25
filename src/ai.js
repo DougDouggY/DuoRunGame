@@ -1,4 +1,4 @@
-import { CONFIG, OBSTACLES, WEAPON } from "./config.js?v=4.1.0";
+import { CONFIG, OBSTACLES, WEAPON } from "./config.js?v=4.2.0";
 export function driveAI(g, id) {
   if (g.status !== "running") return;
   const p = g.players[id],
@@ -48,7 +48,12 @@ export function driveAI(g, id) {
     g.action(id, "jump");
   if (d.action === "slide" && p.y === 0 && !p.slide && dx < 48 && dx > 0)
     g.action(id, "slide");
-  if (d.owner === id && dx < 45 && dx > 0 && p.energy <= 0)
+  if (
+    d.owner === id &&
+    dx < 12 + g.speed * CONFIG.powerAnticipation &&
+    dx > 0 &&
+    p.energy <= 0
+  )
     g.action(id, "power");
   if (
     id === 1 &&

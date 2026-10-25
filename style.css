@@ -377,3 +377,48 @@ dialog button {
     padding: 0 8px;
   }
 }
+#inspect {
+  border-color: #594b94;
+  color: #dbc5ff;
+  margin: 6px;
+}
+#animation-panel {
+  max-width: 900px;
+  width: 94%;
+}
+#animation-canvas {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 8/5;
+  display: block;
+  border: 1px solid #263e61;
+  border-radius: 6px;
+  margin: 14px 0;
+}
+#preview-kind {
+  width: 100%;
+  font-size: 12px;
+}
+.animation-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+#preview-count {
+  color: #a6dfff;
+  font-size: 11px;
+  margin-left: auto;
+}
+@media (max-width: 700px) {
+  #inspect {
+    padding: 7px;
+    font-size: 9px;
+  }
+  #animation-panel {
+    padding: 12px;
+  }
+  #animation-panel h2 {
+    font-size: 15px;
+  }
+}

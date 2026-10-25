@@ -1,3 +1,4 @@
+import { ANIMATION, animationFrames } from "./animation.js?v=4.2.0";
 import {
   CONFIG,
   CHARACTER_ASSETS,
@@ -6,7 +7,8 @@ import {
   SPEEDS,
   RUN_SPRITES,
   WEAPON,
-} from "./config.js?v=4.1.0";
+  DRONE,
+} from "./config.js?v=4.2.0";
 export class Renderer {
   constructor(canvas, assets) {
     this.canvas = canvas;
@@ -114,6 +116,7 @@ export class Renderer {
     const scale = w / 1440;
     c.save();
     c.scale(scale, 1); // Same collision coordinate system in portrait; only horizontal geometry adapts.
+    this.mechanismLinks(g);
     for (const o of g.objects) this.obstacle(o, g);
     for (const p of g.players) {
       let y = this.floor(p.lane) - p.y;
@@ -232,35 +235,38 @@ export class Renderer {
     }
     const compiled =
       ["run", "weapon", "power"].includes(state) &&
-      this.assets[p.id ? "indaCompiled" : "neonCompiled"];
+      this.assets[p.id ? "indaRun" : "neonRun"];
     const running = state === "run" && this.assets.run;
     if (compiled) {
-      const gaitFrame = Math.floor(t * Math.min(60, speed / 16)) % 10;
-      const frame = p.weapon
-        ? Math.min(9, Math.floor((p.weaponAge / WEAPON.duration) * 10))
-        : gaitFrame;
-      const scale = this.w < 1000 ? 0.8 : 1;
-      this.glow(p.id ? "#38dbff" : "#4c74ff", p.power ? 16 : 4);
+      const f = animationFrames(p, t, speed),
+        scale = this.w < 1000 ? 0.8 : 1;
+      const { width: sw, height: sh, anchor: A } = ANIMATION;
+      this.glow(p.id ? "#38dbff" : "#4c74ff", p.power ? 14 : 3);
       if (p.power && !p.id) {
         c.globalAlpha *= 0.68;
         c.globalCompositeOperation = "screen";
       }
-      const draw = (f, row) =>
-        c.drawImage(
-          compiled,
-          f * 320,
-          row * 220,
-          320,
-          220,
-          -130 * scale,
-          -210 * scale,
-          320 * scale,
-          220 * scale,
-        );
+      const draw = (img, frame, row = 0) => {
+        if (img)
+          c.drawImage(
+            img,
+            frame * sw,
+            row * sh,
+            sw,
+            sh,
+            -A.x * scale,
+            -A.y * scale,
+            sw * scale,
+            sh * scale,
+          );
+      };
       if (p.weapon) {
-        draw(gaitFrame, 3);
-        draw(frame, 2);
-      } else draw(frame, 0);
+        draw(compiled, f.gait, 1);
+        draw(this.assets[p.id ? "indaSword" : "neonBow"], f.weapon);
+      } else if (p.id && p.power) {
+        draw(compiled, f.gait, 1);
+        draw(this.assets.indaShield, f.shield);
+      } else draw(compiled, f.gait);
       c.globalCompositeOperation = "source-over";
       c.shadowBlur = 0;
     }
@@ -324,7 +330,6 @@ export class Renderer {
     } else if (!compiled) {
       this.text("ASSET EN CHARGEMENT", 0, -60, 10, col);
     }
-    this.weapons(p);
     if (p.power) {
       c.strokeStyle = p.id ? "#ff61db" : "#61eaff";
       this.glow(c.strokeStyle, 25);
@@ -341,7 +346,9 @@ export class Renderer {
       this.monster(o, g);
       return;
     }
-    if (["crate", "door", "target", "drone"].includes(o.type)) {
+    if (
+      ["crate", "door", "target", "drone", "armored", "vine"].includes(o.type)
+    ) {
       this.newObstacle(o, g);
       return;
     }
@@ -627,31 +634,20 @@ export class Renderer {
     this.text("ESPACE · SWITCH  ⇄", w - 20, 55, 13, "#6addfa", "right");
     c.restore();
   }
-  weapons(p) {
-    const c = this.ctx;
-    if (p.power && p.id === 1) {
-      const img = this.assets[p.power < 0.45 ? "knightImpact" : "knight"];
-      if (img) {
-        c.save();
-        c.translate(35, -52);
-        c.rotate(-0.12);
-        this.glow("#4eeaff", 20);
-        const h = 118,
-          w = (h * img.width) / img.height;
-        c.drawImage(img, -w / 2, -h / 2, w, h);
-        c.shadowBlur = 0;
-        c.restore();
-      }
-    }
-  }
   newObstacle(o, g) {
     const c = this.ctx,
       floor = this.floor(o.lane),
       d = OBSTACLES[o.type];
-    if (o.hit && (!o.deathLife || o.deathLife <= 0)) return;
+    if (
+      o.hit &&
+      (!o.deathLife || o.deathLife <= 0) &&
+      !["target", "door"].includes(o.type)
+    )
+      return;
     c.save();
     c.translate(o.x, floor);
-    if (o.hit) c.globalAlpha = Math.max(0, o.deathLife / 0.6);
+    if (o.hit && !["target", "door"].includes(o.type))
+      c.globalAlpha = Math.max(0, o.deathLife / 0.6);
     if (o.type === "crate") {
       const img = this.assets.crateBright;
       if (img) {
@@ -665,24 +661,40 @@ export class Renderer {
       this.text("A / ↑ · SAUT", d.w / 2, -d.h - 13, 11, "#ffe1a0", "center");
     }
     if (o.type === "door") {
-      const img = this.assets.door;
-      const retract = o.hit ? 1 - o.deathLife / 0.6 : 0;
+      const img = this.assets.door,
+        retract = o.hit
+          ? Math.min(1, Math.max(0, (g.time - o.deathAt) / 0.6))
+          : 0;
       if (img) {
+        const h = d.h,
+          w = (h * img.width) / img.height,
+          x = (d.w - w) / 2,
+          y = -h;
         c.save();
         c.beginPath();
-        c.rect(-12, -d.h, 110, d.h);
+        c.rect(x, y, 12, h);
+        c.rect(x + w - 12, y, 12, h);
+        c.rect(x, y, w, 10);
         c.clip();
-        this.glow(o.hit ? "#4affc8" : "#fb42c5", 12);
-        const w = (d.h * img.width) / img.height;
-        c.drawImage(img, (d.w - w) / 2, -d.h - retract * d.h, w, d.h);
+        c.drawImage(img, x, y, w, h);
         c.restore();
+        c.save();
+        c.beginPath();
+        c.rect(x + 12, y + 10, w - 24, h - 14);
+        c.clip();
+        c.drawImage(img, x, y - retract * h, w, h);
+        c.restore();
+        this.glow(o.hit ? "#71ffbb" : "#ffbd60", 10);
+        c.fillStyle = o.hit ? "#71ffbb" : "#ffbd60";
+        c.fillRect(x + w - 10, -h + 35, 7, 15);
+        c.shadowBlur = 0;
       }
       this.text(
-        o.hit ? "PORTE OUVERTE" : "PORTE · INTERRUPTEUR ↑",
+        `${this.linkTag(o, g)} · ${o.hit ? "OUVERTE" : "PORTE VERROUILLÉE"}`,
         d.w / 2,
-        -d.h - 13,
+        -d.h - 14,
         11,
-        o.hit ? "#7bffcf" : "#ff9ee5",
+        o.hit ? "#81ffc2" : "#ffd798",
         "center",
       );
     }
@@ -708,32 +720,25 @@ export class Renderer {
         o.hit ? "#8affb5" : "#a4eeff",
         "center",
       );
-      if (!o.hit && o.links) {
-        for (const id of o.links) {
-          const door = g.objects.find((n) => n.id === id && !n.hit);
-          if (door) {
-            c.strokeStyle = "#5ac8f86b";
-            c.lineWidth = 1;
-            c.setLineDash([7, 8]);
-            c.beginPath();
-            c.moveTo(d.w / 2, y + 75);
-            c.lineTo(door.x - o.x + 37, -145);
-            c.stroke();
-            c.setLineDash([]);
-          }
-        }
-      }
+      this.text(
+        this.linkTag(o, g),
+        d.w / 2,
+        y + 102,
+        12,
+        o.hit ? "#88ffb7" : "#ffd08c",
+        "center",
+      );
     }
     if (o.type === "drone") {
       const img = this.assets[o.hit ? "laserDroneDead" : "laserDrone"];
       if (img) {
-        const w = 100,
+        const w = DRONE.width,
           h = (w * img.height) / img.width;
         this.glow(o.hit ? "#ff914f" : "#ff4269", 12);
         c.drawImage(
           img,
           d.w / 2 - w / 2,
-          -210 + Math.sin(g.time * 5) * 3,
+          -DRONE.bodyY + Math.sin(g.time * 5) * 4,
           w,
           h,
         );
@@ -741,8 +746,12 @@ export class Renderer {
       }
       if (!o.hit) {
         const x = d.w / 2,
-          y = -145;
+          y = -DRONE.beamY + Math.sin(g.time * 5) * 4;
         this.glow("#ff235c", 19);
+        c.fillStyle = "#ff425c";
+        c.beginPath();
+        c.arc(x, y, 6, 0, Math.PI * 2);
+        c.fill();
         c.fillStyle = "#ef245d39";
         c.fillRect(0, y, d.w, -y);
         c.strokeStyle = "#ff667e";
@@ -757,10 +766,128 @@ export class Renderer {
         c.fillStyle = "#ff688e";
         c.fillRect(4, -2, d.w - 8, 3);
         c.shadowBlur = 0;
-        this.text("R · DRONE LASER", x, -223, 11, "#ffb4cc", "center");
+        this.text("R · ARC — DRONE", x + 85, -DRONE.aimY + 5, 11, "#a4deff");
       }
     }
+    if (o.type === "armored") {
+      const img = this.assets[o.hit ? "armoredBroken" : "armoredDetailed"];
+      if (img) {
+        this.glow(o.hit ? "#ffbb64" : "#f54ac6", 9);
+        c.drawImage(img, -15, -112, 106, 112);
+        c.shadowBlur = 0;
+      }
+      this.text(
+        "E · BOUCLIER · BRISER",
+        d.w / 2,
+        -126,
+        11,
+        "#ffb3e9",
+        "center",
+      );
+    }
+    if (o.type === "vine") {
+      const img = this.assets.organic;
+      if (img) {
+        if (!o.hit) c.drawImage(img, -18, -125, 108, 125);
+        else {
+          const k = Math.min(1, (g.time - o.deathAt) / 0.6);
+          c.drawImage(
+            img,
+            0,
+            img.height * 0.65,
+            img.width,
+            img.height * 0.35,
+            -18,
+            -44,
+            108,
+            44,
+          );
+          c.save();
+          c.translate(33, -45 + k * k * 85);
+          c.rotate(k * 0.8);
+          c.drawImage(
+            img,
+            0,
+            0,
+            img.width,
+            img.height * 0.65,
+            -54,
+            -81,
+            108,
+            81,
+          );
+          c.restore();
+        }
+      }
+      this.text("R · ÉPÉE · TRANCHER", d.w / 2, -140, 11, "#ffa2e0", "center");
+    }
     c.restore();
+  }
+  linkTag(o, g) {
+    const target =
+      o.type === "target"
+        ? o
+        : g.objects.find((n) => n.type === "target" && n.links?.includes(o.id));
+    return target ? "C" + target.id : "PORTE";
+  }
+  mechanismLinks(g) {
+    const c = this.ctx;
+    for (const sensor of g.objects.filter(
+      (o) => o.type === "target" && o.links,
+    )) {
+      for (const id of sensor.links) {
+        const door = g.objects.find((o) => o.id === id);
+        if (!door) continue;
+        const sx = sensor.x + 24,
+          sy = this.floor(sensor.lane) - 270,
+          dx = door.x + OBSTACLES.door.w - 8,
+          dy = this.floor(door.lane) - OBSTACLES.door.h + 8,
+          ceiling = Math.min(sy - 16, dy - 22),
+          on = sensor.hit;
+        const path = () => {
+          c.beginPath();
+          c.moveTo(sx, sy + 12);
+          c.lineTo(sx, ceiling);
+          c.lineTo(dx, ceiling);
+          c.lineTo(dx, dy);
+        };
+        c.save();
+        c.lineJoin = "round";
+        c.lineCap = "round";
+        path();
+        c.strokeStyle = "#020611";
+        c.lineWidth = 12;
+        c.stroke();
+        path();
+        c.strokeStyle = "#48536a";
+        c.lineWidth = 8;
+        c.stroke();
+        path();
+        this.glow(on ? "#67ffc1" : "#dca458", on ? 12 : 3);
+        c.strokeStyle = on ? "#67ffc1" : "#dca458";
+        c.lineWidth = 2;
+        c.stroke();
+        c.shadowBlur = 0;
+        for (const x of [sx, dx]) {
+          c.fillStyle = "#263b53";
+          c.fillRect(x - 6, ceiling - 6, 12, 12);
+          c.strokeStyle = "#94a6bd";
+          c.strokeRect(x - 6, ceiling - 6, 12, 12);
+        }
+        const pulse = (g.time * 140) % Math.max(1, dx - sx);
+        c.fillStyle = on ? "#e8fff5" : "#ffe2a6";
+        c.fillRect(sx + pulse - 6, ceiling - 2, 12, 4);
+        this.text(
+          this.linkTag(sensor, g),
+          (sx + dx) / 2,
+          ceiling - 8,
+          10,
+          on ? "#97ffd3" : "#ffcf8d",
+          "center",
+        );
+        c.restore();
+      }
+    }
   }
   monster(o, g) {
     if (o.hit && !o.deathLife) return;
@@ -816,17 +943,30 @@ export class Renderer {
       const base = this.floor(a.fromLane ?? a.lane),
         destination = this.floor(a.toLane ?? a.lane),
         y = base + (destination - base) * (a.progress || 0) - (a.y ?? 75);
-      this.glow("#66adff", 22);
-      c.strokeStyle = "#c5efff";
-      c.lineWidth = 3;
+      c.save();
+      c.translate(a.x, y);
+      if (a.target)
+        c.rotate(
+          Math.atan2(
+            destination - base - (a.targetHeight ?? 75) + (a.fromY ?? 75),
+            Math.max(1, (a.targetX ?? a.x) - a.originX),
+          ),
+        );
+      const img = this.assets.arrow;
+      if (img) {
+        const w = 100,
+          h = (w * img.height) / img.width;
+        this.glow("#5abaff", 6);
+        c.drawImage(img, -w, -h / 2, w, h);
+        c.shadowBlur = 0;
+      }
+      c.strokeStyle = "#5caaff66";
+      c.lineWidth = 1;
       c.beginPath();
-      c.moveTo(a.x - 55, y);
-      c.lineTo(a.x + 16, y);
-      c.lineTo(a.x + 6, y - 7);
-      c.moveTo(a.x + 16, y);
-      c.lineTo(a.x + 6, y + 7);
+      c.moveTo(-125, 0);
+      c.lineTo(-82, 0);
       c.stroke();
-      c.shadowBlur = 0;
+      c.restore();
     }
     for (const fx of g.effects) {
       const k = 1 - fx.life / fx.max,

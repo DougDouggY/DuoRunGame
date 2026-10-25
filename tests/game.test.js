@@ -265,3 +265,23 @@ test("ceiling switch cannot hurt, door cannot be dashed through, drone laser sto
   step(h, 0.01);
   assert.equal(h.players[0].hp, 2);
 });
+test("ceiling activation remains powered, linked door opens, organic growth requires sword", () => {
+  const g = run();
+  g.objects.push(
+    { id: 1, type: "target", lane: 0, x: 650, links: [2] },
+    { id: 2, type: "door", lane: 0, x: 910 },
+  );
+  g.action(0, "weapon");
+  step(g, 1);
+  assert.equal(g.objects[0].hit, true);
+  assert.equal(typeof g.objects[0].activatedAt, "number");
+  assert.equal(g.objects[1].hit, true);
+  const h = run();
+  h.objects.push({ id: 1, type: "vine", lane: 1, x: 400 });
+  h.action(1, "power");
+  step(h, 0.02);
+  assert.ok(!h.objects[0].hit);
+  h.action(1, "weapon");
+  step(h, 0.42);
+  assert.equal(h.objects[0].hit, true);
+});

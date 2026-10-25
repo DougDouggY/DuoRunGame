@@ -36,3 +36,13 @@ Les PNG `characters/v41/neon-compiled.png` et `inda-compiled.png` ont 10 colonne
 `src/sprite-compiler.js` et `tools/build-sprites.mjs` produisent les vrais atlas et leurs manifestes. Les PNG sont chargés tels quels au jeu : aucun étirement de personnage entier pour simuler une foulée. Les anciennes feuilles V4 restent disponibles pour les autres états.
 
 `obstacles/props-v41.png` est la source des accessoires détourés : grand bouclier de chevalier (repos/impact), caisse ambre, porte, interrupteur suspendu (off/on), drone (entier/détruit). Les images isolées se trouvent dans `obstacles/v41/`. Le laser du drone et les liaisons électriques de l’interrupteur restent des effets animés Canvas.
+
+## V4.2 — prises en main et phases supplémentaires
+
+- `characters/v42/bow-source.png` : planche irrégulière examinée cellule par cellule. 16 poses retenues (la pose source 12 a une prise déconnectée et est exclue). Main/poignée/arc/corde sont conservés ensemble, sans arc flottant ajouté après découpage.
+- `sword-source.png` : 18 poses d’InDaFrench avec la grande épée tenue par sa poignée ; `shield-source.png` : 16 poses avec poignée et sangles à l’avant-bras. Ces bustes sont assemblés sur la foulée conservée, avec repères de ceinture explicites.
+- `run-extra-source.png` : deux vrais intermédiaires de course par personnage, insérés aux indices 3 et 9 dans une boucle de 12, sans remplacer les dix poses précédentes.
+- `sprite-compiler-v42.js` nettoie les composantes détachées venant des cellules voisines et garde les prises connectées. Un fin bord anti-aliasé est conservé. Les repères de hanches servent aussi à retirer les fragments étrangers des bas de corps sans retirer les jambes du personnage.
+- `obstacles/v42/props-source.png` et les six extractions : drone/débris, barricade/débris, croissance organique à couper et véritable flèche électrifiée (fût carbone, pointe, empennage). Les conduits de porte, voyants et rayons restent des effets Canvas reliés aux positions réelles du niveau.
+
+Les cinq planches `*-contact.png` et l’aperçu ralenti du menu utilisent les images réellement rendues dans le jeu. Les images générées ne remplacent pas un travail final de raccord anatomique : variations de tissu, de posture et d’échelle peuvent subsister.

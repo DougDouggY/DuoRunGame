@@ -2,19 +2,19 @@
 <html lang="fr">
   <head>
     <meta charset="utf-8" />
-    <meta name="version" content="4.1.0" />
+    <meta name="version" content="4.2.0" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <link
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2212%22 fill=%22%23060d20%22/%3E%3Cpath d=%22M12 50V14L50 50V14%22 fill=%22none%22 stroke=%22%23ff39cc%22 stroke-width=%227%22/%3E%3C/svg%3E"
     />
-    <title>DUO RUSH — V4.1</title>
-    <link rel="stylesheet" href="style.css?v=4.1.0" />
+    <title>DUO RUSH — V4.2</title>
+    <link rel="stylesheet" href="style.css?v=4.2.0" />
   </head>
   <body>
     <header>
       <a class="brand" href="./"
-        >DUO<span>RUSH</span><small>V4.1 / ARMED RUN</small></a
+        >DUO<span>RUSH</span><small>V4.2 / CLASSIQUE</small></a
       >
       <div class="live">● LOCAL CO-OP <span>2 JOUEURS</span></div>
       <nav>
@@ -65,6 +65,7 @@
               test</label
             >
           </div>
+          <button id="inspect">VOIR LES ANIMATIONS</button>
           <button id="demo">DÉMO · DEUX IA</button
           ><button id="play" class="primary">ENTRER DANS LA VILLE →</button>
           <p class="hint">
@@ -101,7 +102,7 @@
     </main>
     <div class="bottom">
       <span>01 — NIGHT DISTRICT</span
-      ><span>SAUTEZ / GLISSEZ / SYNCHRONISEZ</span><span>BUILD 04.10</span>
+      ><span>SAUTEZ / GLISSEZ / SYNCHRONISEZ</span><span>BUILD 04.20</span>
     </div>
     <dialog id="network-panel">
       <h2>DUO À DISTANCE</h2>
@@ -134,6 +135,31 @@
       <button id="network-close">FERMER</button
       ><button id="disconnect">DÉCONNECTER</button>
     </dialog>
-    <script type="module" src="src/main.js?v=4.1.0"></script>
+    <dialog id="animation-panel">
+      <h2>LES PERSONNAGES EN MOUVEMENT</h2>
+      <p>Observez les prises en main au ralenti, ou avancez pose par pose.</p>
+      <select id="preview-kind" aria-label="Animation">
+        <option value="neon-run">NÉON IV · Course</option>
+        <option value="arrow">PROJECTILE · Flèche électrifiée</option>
+        <option value="neon-bow" selected>NÉON IV · Arc électrique</option>
+        <option value="inda-run">INDAFRENCH · Course</option>
+        <option value="inda-sword">INDAFRENCH · Épée glitch</option>
+        <option value="inda-shield">INDAFRENCH · Bouclier</option></select
+      ><canvas
+        id="animation-canvas"
+        width="768"
+        height="480"
+        aria-label="Aperçu des animations"
+      ></canvas>
+      <div class="animation-controls">
+        <button id="preview-prev">← POSE</button
+        ><button id="preview-play">Ⅱ PAUSE</button
+        ><button id="preview-next">POSE →</button
+        ><span id="preview-count"></span>
+      </div>
+      <p>Le jeu reste en pause pendant l’observation.</p>
+      <button id="preview-close">FERMER</button>
+    </dialog>
+    <script type="module" src="src/main.js?v=4.2.0"></script>
   </body>
 </html>

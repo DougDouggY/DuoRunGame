@@ -1,4 +1,4 @@
-# DUO RUSH — V4.1
+# DUO RUSH — V4.2
 
 Runner coopératif Canvas 2D, deux routes visibles, ville nocturne illustrée conservée de la V3. NÉON IV (femme, veste noire et longs cheveux, électricité bleue) commence en haut ; INDAFRENCH (cagoule blanche, t-shirt noir, cyan/glitch) commence en bas.
 
@@ -74,7 +74,7 @@ npm run test:browser
 npm run test:network
 ```
 
-- **21 tests de logique, sprites et protocole** : vitesses, séquences, durée exacte de 5 s, demande expirée, double confirmation, pause, cooldown/retour sûr, quatre capacités, timing épée, mécanisme lié, bonus, KO/reset.
+- **25 tests de logique, sprites et protocole** : vitesses, séquences, durée exacte de 5 s, demande expirée, double confirmation, pause, cooldown/retour sûr, quatre capacités, timing épée, mécanisme lié, bonus, KO/reset.
 - Une simulation fait finir le niveau aux deux IA **aux cinq vitesses, sans dégât ni impact absorbé par un bouclier**, avec les collisions normales. Aucun HP modifié par l’IA, aucune invincibilité ni suppression d’obstacles. Chaque échange et sa durée sont contrôlés. Cela démontre la solvabilité du catalogue actuel, pas de tous les patterns imaginables ni la facilité humaine.
 - Chromium : touches réelles, ressources, projectiles, pause, SWITCH/retour, cinq niveaux IA, démo, paysage et portrait, erreurs console/HTTP.
 - Protocole réseau : quatre tests des paquets, actions de l’invité, snapshots et pause sur canaux de données simulés. Le test de connexion WebRTC réelle est **SKIP** : la politique Chromium gérée de ce cloud interdit l’UDP direct et ne produit aucun candidat ICE. La négociation complète, le canal réel et la connexion Internet/NAT restent non validés.
@@ -87,15 +87,22 @@ Captures issues de la simulation réelle, sans arrangement des obstacles : `asse
 
 Les illustrations de ville et les poses existantes sont conservées. Nouveaux atlas RGBA : course, obstacles industriels, Mâchoire. Voir [assets/ART.md](assets/ART.md). Les animations ne remplacent pas les silhouettes par des formes simples. Les armes et effets sont des tracés Canvas superposés aux personnages ; le monstre possède deux repos, trois attaques, morsure, quatre étapes de destruction et deux états de géant.
 
-**Animations V4.1 :** chaque personnage possède un atlas PNG de 10 étapes de course et 10 étapes de course armée, plus deux lignes de couches séparées. La pose de contact opposée a été illustrée explicitement : jambe proche à couture cyan derrière, autre jambe devant. Les corps/armes et les bas de corps sont assemblés avec des repères fixes ; en jeu, les jambes poursuivent la foulée à la vitesse courante pendant que le haut du corps exécute le tir ou le coup ; certains intermédiaires de jambes sont réutilisés. Les atlas ne sont pas une animation dessinée intégralement à la main. Les raccords de taille, de vêtement et la boucle restent perfectibles. Les poses intermédiaires saut/glissade/récupération sont encore peu nombreuses ; dégâts et KO réutilisent des ressources V3, sans mort complète spécifique à chaque cause. Les dix poses illustrées de sortie/tension/tir/rangement d’arc et de dégainé/frappe/récupération d’épée gardent une foulée alternée. Le bouclier est une grande illustration de type chevalier, superposée au corps. Les atlas générés peuvent garder de légers halos ; l’animation n’est pas un pack professionnel finalisé. Le réseau distant est expérimental sans relais. Un playtest humain prolongé à deux et un test sur deux connexions Internet restent à faire.
+**Animations V4.2 :** la course conserve les dix poses acceptées et ajoute deux intermédiaires illustrés par personnage : 12 frames. Néon IV dispose de 16 poses d’arc, InDaFrench de 18 poses d’épée et 16 poses de bouclier. Les mains, poignées, armes et sangles sont dans le même dessin ; aucun arc ni bouclier indépendant n’est posé devant le buste. La foulée continue indépendamment de l’animation du haut du corps. Une pose d’arc dont la prise était déconnectée a été écartée et les fragments de cellules voisines ont été nettoyés.
 
-## Changements de jeu V4.1
+**Limites assumées :** ce sont des illustrations générées, découpées et enregistrées à la taille, pas une animation professionnelle redessinée intégralement à la main. Certains raccords de vêtement, de proportions et de posture peuvent encore être affinés. Les états saut/glissade/dégâts/KO conservent les ressources précédentes ; la V4.2 concentre les nouvelles poses sur la course et les armes. La connexion WebRTC reste expérimentale et non validée dans le cloud, comme expliqué ci-dessus.
 
-- Le saut dure environ **1,3 seconde**, à toutes les vitesses ; sa hauteur est d’environ 169 px. La glissade dure 1,1 s et E reste visible 0,8 s.
-- E et R peuvent être lancés sans obstacle et pendant les autres actions, sous réserve de leur cooldown. R tire aussi dans le vide : dix étapes sur 0,8 s, flèche réellement créée au lâcher (étape 7, à 0,56 s), puis vol à 1 600 px/s. L’IA adapte le début de son coup d’épée à la vitesse et à la nouvelle préparation.
-- L’interrupteur est au **plafond**, 260 px devant sa porte. Le tir l’active ; la porte liée se rétracte puis disparaît. Le câble lumineux rend le lien lisible. L’interrupteur n’inflige jamais de dégâts au sol.
-- Le drone vole en hauteur et projette un rayon rouge jusqu’au sol. Son rayon est dangereux ; détruire le drone coupe immédiatement le laser. Les portes et drones exigent des flèches, pas le dash ou le bouclier.
-- Les caisses passent à **66 × 68 px**, avec illustration et bordure ambre contrastée.
-- Les sources et PNG finaux sont dans `assets/characters/v41/`. Pour rebâtir les sprites après modification des poses : serveur actif, puis `npm run sprites:build`. Les fichiers JSON indiquent les repères et les poses droite/gauche. Le jeu charge les PNG déjà compilés ; aucun outil de génération n’est nécessaire pour jouer.
+## Voir les animations et leurs prises en main
 
-`assets/screenshot-v41-combat.png` est une scène de contrôle disposée pour inspecter l’arc, le bouclier, la porte et le drone ; elle n’est pas une preuve de parcours humain. Les captures de niveau proviennent de la simulation réelle.
+Dans le menu, **Voir les animations** ouvre un aperçu agrandi : choisir la course, l’arc, l’épée, le bouclier ou la flèche. Lecture ralentie, pause et boutons pose précédente/suivante permettent d’examiner chaque main et chaque arme sans attendre une rencontre du niveau. Le jeu est en pause pendant l’observation ; fermer puis reprendre avec le bouton Pause si une partie était en cours.
+
+## Changements visuels V4.2
+
+- Arc tenu bas, levée progressive, armement, tension, lâcher et retour en position basse. La flèche en vol possède un vrai fût, un empennage et une pointe métallique, entourés d’électricité ; elle part à la position de la main et s’oriente vers la cible.
+- Épée glitch physiquement tenue par la poignée : dégainé, montée, préparation, coupe et récupération. Bouclier de chevalier attaché à l’avant-bras : prise, levée, protection, percussion et retour.
+- Le circuit de la porte est un conduit métallique à coudes, avec identifiant partagé sur capteur et porte. Il devient vert après activation ; l’interrupteur alimenté et l’encadrement ouvert restent visibles.
+- Drone de 140 px de large, plus haut (haut du sprite 290 px au-dessus du sol), réacteurs et rayon dangereux sous l’émetteur. La barricade blindée est plus grande, avec emblème de bouclier et débris propres. Une variante organique à trancher apparaît au second passage, avec marque de coupe et séparation animée.
+- Vitesses **180 / 280 / 400 / 600 / 800 px/s**, saut d’environ 1,3 s, espaces entre rencontres de 6,8 s maximum, SWITCH uniquement sur Espace et sorts lançables sans cible restent conservés.
+
+Les sources et les PNG sont dans `assets/characters/v42/` et `assets/obstacles/v42/`. `src/animation.js` décrit les dimensions et les cadences ; `src/sprite-compiler-v42.js` enregistre les bustes à la taille et préserve les prises illustrées. Pour reproduire les atlas, serveur actif : `npm run sprites:build`, puis `npm run sprites:contacts`. Le jeu charge les PNG déjà construits. Les planches de contact montrent les mêmes images que le rendu du jeu ; elles permettent une revue visuelle des 50 poses d’armes.
+
+Captures V4.2 : `assets/screenshot-v42-inspector.png` montre l’aperçu réel avec ses commandes ; `assets/screenshot-v42-combat.png` est une scène disposée pour vérifier la prise des armes, le circuit de porte et le drone. Cette dernière n’est pas présentée comme un parcours humain du niveau.
