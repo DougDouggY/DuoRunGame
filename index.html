@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2212%22 fill=%22%23060d20%22/%3E%3Cpath d=%22M12 50V14L50 50V14%22 fill=%22none%22 stroke=%22%23ff39cc%22 stroke-width=%227%22/%3E%3C/svg%3E"
+    />
+    <title>NEON RUSH — V3 Classique</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="./"
+        >NEON<span>RUSH</span><small>V3 / CLASSIQUE</small></a
+      >
+      <div class="live">● LOCAL CO-OP <span>2 JOUEURS</span></div>
+      <nav>
+        <button id="help">? TOUCHES</button><button id="sound">SON OFF</button
+        ><button id="pause">Ⅱ PAUSE</button><button id="reset">↻</button>
+      </nav>
+    </header>
+    <main>
+      <div class="stage">
+        <canvas
+          id="game"
+          aria-label="NEON RUSH jeu coopératif à deux parcours"
+        ></canvas>
+        <div id="overlay">
+          <div class="eyebrow">DEUX DESTINS. UNE MÊME FRÉQUENCE.</div>
+          <h1>NEON <i>RUSH</i></h1>
+          <p>Traversez la ville. Échangez vos routes. Restez ensemble.</p>
+          <div class="cards">
+            <article>
+              <b>NÉON IV</b>
+              <p>Z saut · S glissade<br />A dash électrique · E switch</p>
+            </article>
+            <article>
+              <b>SWONNI</b>
+              <p>↑ saut · ↓ glissade<br />→ frappe glitch · Entrée switch</p>
+            </article>
+          </div>
+          <p class="hint">
+            Mur bleu → Néon IV / Caisse blindée rose → Swonni<br />SWITCH : E +
+            Entrée à moins de 1,4 s. Trois cœurs chacun.
+          </p>
+          <button id="play" class="primary">ENTRER DANS LA VILLE →</button>
+          <p class="hint">
+            Casque conseillé · Coop locale · Vitesse fixe Découverte
+          </p>
+        </div>
+      </div>
+      <footer>
+        <span class="track"
+          >♫ <b>TEXT ME BACK</b> — NÉON IV
+          <em> / audio local facultatif</em></span
+        ><label
+          >VITESSE
+          <select id="speed">
+            <option value="135">Découverte</option>
+            <option value="165">Lente</option>
+            <option value="215">Moyenne</option>
+            <option value="280">Rapide</option>
+            <option value="360">Cauchemardesque</option>
+          </select></label
+        ><label class="import"
+          >IMPORT AUDIO
+          <input id="audio" type="file" accept="audio/mpeg,audio/wav" /></label
+        ><input
+          id="volume"
+          aria-label="Volume"
+          type="range"
+          min="0"
+          max="1"
+          step="0.05"
+          value="0.4"
+        />
+      </footer>
+    </main>
+    <div class="bottom">
+      <span>01 — NIGHT DISTRICT</span
+      ><span>SAUTEZ / GLISSEZ / SYNCHRONISEZ</span><span>BUILD 03.00</span>
+    </div>
+    <script type="module" src="src/main.js"></script>
+  </body>
+</html>

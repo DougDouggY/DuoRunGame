@@ -1,0 +1,258 @@
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: #050812;
+  color: #d4e4f4;
+  font:
+    12px "Segoe UI",
+    sans-serif;
+}
+header {
+  height: 83px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4%;
+  border-bottom: 1px solid #253044;
+  background: #090e19;
+}
+.brand {
+  font-size: 27px;
+  font-weight: 950;
+  letter-spacing: -1px;
+  color: #fff;
+  text-decoration: none;
+  font-style: italic;
+}
+.brand span {
+  color: #fa39bd;
+}
+.brand small {
+  font-size: 9px;
+  font-style: normal;
+  letter-spacing: 2px;
+  display: block;
+  color: #798ba8;
+  margin-top: 4px;
+}
+.live {
+  color: #38eddf;
+  letter-spacing: 2px;
+  font-size: 10px;
+}
+.live span {
+  color: #62718d;
+  margin-left: 16px;
+}
+button,
+select {
+  color: #b8c9dc;
+  background: #111a2c;
+  border: 1px solid #2a3a55;
+  border-radius: 5px;
+  padding: 10px 13px;
+  cursor: pointer;
+  font: inherit;
+}
+button:hover {
+  border-color: #42dfff;
+  color: white;
+}
+nav {
+  display: flex;
+  gap: 7px;
+}
+main {
+  max-width: 1600px;
+  margin: 28px auto 0;
+  padding: 0 3%;
+}
+.stage {
+  position: relative;
+  border: 1px solid #31435e;
+  box-shadow: 0 0 60px #06204555;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #080e20;
+}
+canvas {
+  width: 100%;
+  display: block;
+  aspect-ratio: 16/9;
+}
+#overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, #040818ee, #070a19bd, #040818dd);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  backdrop-filter: blur(3px);
+}
+#overlay.hidden {
+  display: none;
+}
+.eyebrow {
+  font-size: 10px;
+  color: #47dcf7;
+  letter-spacing: 4px;
+}
+h1 {
+  font-size: clamp(35px, 6vw, 86px);
+  margin: 9px 0;
+  font-weight: 950;
+  font-style: italic;
+  letter-spacing: -4px;
+  text-shadow: 0 0 30px #735cff;
+}
+h1 i {
+  color: #fa39bd;
+}
+#overlay > p {
+  color: #91a8bd;
+}
+.cards {
+  display: flex;
+  gap: 24px;
+  margin: 12px;
+}
+.cards article {
+  min-width: 190px;
+  padding: 15px 22px;
+  border: 1px solid #4a285e;
+  background: #131225aa;
+  border-radius: 6px;
+  text-align: left;
+}
+.cards article:last-child {
+  border-color: #195b73;
+}
+.cards b {
+  color: #ff57d4;
+  letter-spacing: 2px;
+}
+.cards article:last-child b {
+  color: #4de8ff;
+}
+.cards p {
+  line-height: 1.9;
+  margin-bottom: 0;
+}
+.primary {
+  background: #eb2ab1;
+  color: white;
+  border: 0;
+  font-weight: bold;
+  letter-spacing: 2px;
+  padding: 17px 32px;
+  margin: 8px;
+}
+.hint {
+  font-size: 11px;
+  line-height: 1.7;
+}
+footer {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 17px 0;
+  color: #71849e;
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+.track {
+  flex: 1;
+}
+.track b {
+  color: #d1dfed;
+}
+em {
+  font-style: normal;
+  color: #53647c;
+}
+footer select {
+  padding: 6px;
+  margin-left: 7px;
+  font-size: 10px;
+}
+.import {
+  border: 1px solid #29374e;
+  padding: 9px;
+  cursor: pointer;
+}
+.import input {
+  display: none;
+}
+#volume {
+  width: 70px;
+  accent-color: #ef35bb;
+}
+.bottom {
+  display: flex;
+  justify-content: space-between;
+  padding: 17px 4%;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: #495b76;
+}
+@media (max-width: 700px) {
+  header {
+    height: 65px;
+    padding: 0 12px;
+  }
+  .live {
+    display: none;
+  }
+  nav button {
+    font-size: 9px;
+    padding: 8px;
+  }
+  main {
+    padding: 0 8px;
+    margin-top: 12px;
+  }
+  footer {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .track {
+    flex-basis: 100%;
+  }
+  .cards {
+    gap: 8px;
+  }
+  .cards article {
+    min-width: 0;
+    padding: 10px;
+    font-size: 10px;
+  }
+  #overlay > p {
+    font-size: 10px;
+  }
+  .eyebrow {
+    font-size: 8px;
+    letter-spacing: 1px;
+  }
+  .hint {
+    margin: 5px;
+  }
+  .primary {
+    padding: 12px;
+  }
+  .bottom {
+    font-size: 7px;
+  }
+  canvas {
+    aspect-ratio: 3/4;
+  }
+  #overlay {
+    padding: 10px;
+  }
+  h1 {
+    letter-spacing: -2px;
+  }
+}
