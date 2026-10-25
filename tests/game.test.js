@@ -14,7 +14,7 @@ const step = (g, t) => g.update(t);
 test("five fixed speeds, authored schedules validate", () => {
   assert.deepEqual(
     SPEEDS.map((s) => s.value),
-    [100, 180, 280, 400, 560],
+    [180, 280, 400, 600, 800],
   );
   for (const s of SPEEDS)
     assert.deepEqual(validateLevel(buildLevel(), s.value), []);
@@ -103,11 +103,11 @@ test("bow picks valid target, projectile disables giant protection before sword"
   const g = run();
   g.objects.push({ id: 7, type: "giant", lane: -1, x: 600, protected: true });
   assert.ok(g.action(0, "weapon"));
-  step(g, 0.3);
+  step(g, 0.9);
   assert.equal(g.objects[0].protected, false);
   g.objects[0].x = 390;
   assert.ok(g.action(1, "weapon"));
-  step(g, 0.1);
+  step(g, 0.45);
   assert.ok(g.objects[0].hit);
   assert.equal(g.score, 500);
 });
@@ -132,7 +132,7 @@ test("sword timing: distant swing fails; valid window destroys maw", () => {
   const h = run();
   h.objects.push({ id: 1, type: "plant", lane: 1, x: 390 });
   h.action(1, "weapon");
-  step(h, 0.1);
+  step(h, 0.45);
   assert.ok(h.objects[0].hit);
 });
 test("target activates linked mechanism across lanes", () => {
@@ -142,7 +142,7 @@ test("target activates linked mechanism across lanes", () => {
     { id: 2, type: "crate", lane: 1, x: 650 },
   );
   g.action(0, "weapon");
-  step(g, 0.2);
+  step(g, 0.8);
   assert.ok(g.objects.every((o) => o.hit));
 });
 test("short invulnerability, bonus, KO, reset", () => {
@@ -195,4 +195,73 @@ test("switch cannot schedule an unsafe automatic return; obstacles preserved", (
   assert.equal(g.action(0, "switch"), false);
   assert.equal(g.schedule.length, 1);
   assert.equal(g.switchState.phase, "idle");
+});
+test("spells cast with no obstacle and bow releases at actual release frame", () => {
+  const g = run();
+  assert.equal(g.action(0, "weapon"), true);
+  step(g, 0.3);
+  assert.equal(g.projectiles.length, 0);
+  assert.equal(g.action(0, "power"), true);
+  step(g, 0.28);
+  assert.equal(g.projectiles.length, 1);
+  assert.equal(g.projectiles[0].target, null);
+  assert.ok(g.players[0].power > 0);
+  const h = run();
+  h.action(0, "jump");
+  assert.ok(h.action(0, "weapon"));
+  h.action(1, "slide");
+  assert.ok(h.action(1, "power"));
+});
+test("long jump lasts about 1.3 seconds at every selected speed", () => {
+  for (const speed of SPEEDS) {
+    const g = run();
+    g.speed = speed.value;
+    g.action(0, "jump");
+    step(g, 1.1);
+    assert.ok(g.players[0].y > 0, speed.name);
+    step(g, 0.25);
+    assert.equal(g.players[0].y, 0);
+  }
+});
+test("no classic encounter gap exceeds half the old 14 second wait", () => {
+  const times = [
+    ...new Set(
+      buildLevel()
+        .filter((o) =>
+          [
+            "crate",
+            "barrier",
+            "laser",
+            "electric",
+            "armored",
+            "plant",
+            "drone",
+            "giant",
+            "door",
+          ].includes(o.type),
+        )
+        .map((o) => o.at),
+    ),
+  ].sort((a, b) => a - b);
+  for (let i = 1; i < times.length; i++)
+    assert.ok(times[i] - times[i - 1] <= 7.00001);
+});
+test("ceiling switch cannot hurt, door cannot be dashed through, drone laser stops on destruction", () => {
+  const g = run();
+  g.objects.push(
+    { id: 1, type: "target", lane: 0, x: 300 },
+    { id: 2, type: "door", lane: 1, x: 300 },
+  );
+  g.action(1, "power");
+  step(g, 0.01);
+  assert.equal(g.players[0].hp, 3);
+  assert.equal(g.players[1].hp, 2);
+  const h = run();
+  h.objects.push({ id: 1, type: "drone", lane: 0, x: 300 });
+  step(h, 0.01);
+  assert.equal(h.players[0].hp, 2);
+  h.players[0].inv = 0;
+  h.destroy(h.objects[0]);
+  step(h, 0.01);
+  assert.equal(h.players[0].hp, 2);
 });

@@ -2,19 +2,19 @@
 <html lang="fr">
   <head>
     <meta charset="utf-8" />
-    <meta name="version" content="4.0.0" />
+    <meta name="version" content="4.1.0" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <link
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2212%22 fill=%22%23060d20%22/%3E%3Cpath d=%22M12 50V14L50 50V14%22 fill=%22none%22 stroke=%22%23ff39cc%22 stroke-width=%227%22/%3E%3C/svg%3E"
     />
-    <title>DUO RUSH — V4</title>
-    <link rel="stylesheet" href="style.css?v=4.0.0" />
+    <title>DUO RUSH — V4.1</title>
+    <link rel="stylesheet" href="style.css?v=4.1.0" />
   </head>
   <body>
     <header>
       <a class="brand" href="./"
-        >DUO<span>RUSH</span><small>V4 / TEMPORAL CO-OP</small></a
+        >DUO<span>RUSH</span><small>V4.1 / ARMED RUN</small></a
       >
       <div class="live">● LOCAL CO-OP <span>2 JOUEURS</span></div>
       <nav>
@@ -41,23 +41,24 @@
             <article>
               <b>INDAFRENCH</b>
               <p>
-                ↑ saut · ↓ glissade<br />→ bouclier · / épée · Entrée SWITCH
+                ↑ saut · ↓ glissade<br />→ bouclier · / épée · Espace SWITCH
               </p>
             </article>
           </div>
           <p class="hint">
             Mur bleu → Néon IV / Caisse blindée rose → InDaFrench<br />SWITCH :
-            Espace + Entrée sous 2 s · Retour automatique après 5 s.
+            Espace : demande puis confirmation sous 2 s · Retour automatique
+            après 5 s.
           </p>
           <div class="setup">
             <label
               >VITESSE
               <select id="pre-speed">
-                <option value="100">Découverte · 100 px/s</option>
-                <option value="180">Lente · 180 px/s</option>
-                <option value="280">Moyenne · 280 px/s</option>
-                <option value="400">Rapide · 400 px/s</option>
-                <option value="560">Cauchemardesque · 560 px/s</option>
+                <option value="180">Découverte · 180 px/s</option>
+                <option value="280">Lente · 280 px/s</option>
+                <option value="400">Moyenne · 400 px/s</option>
+                <option value="600">Rapide · 600 px/s</option>
+                <option value="800">Cauchemardesque · 800 px/s</option>
               </select></label
             ><label
               ><input id="ai1" type="checkbox" checked /> INDAFRENCH : IA de
@@ -78,11 +79,11 @@
         ><label
           >VITESSE
           <select id="speed">
-            <option value="100">Découverte</option>
-            <option value="180">Lente</option>
-            <option value="280">Moyenne</option>
-            <option value="400">Rapide</option>
-            <option value="560">Cauchemardesque</option>
+            <option value="180">Découverte</option>
+            <option value="280">Lente</option>
+            <option value="400">Moyenne</option>
+            <option value="600">Rapide</option>
+            <option value="800">Cauchemardesque</option>
           </select></label
         ><label class="import"
           >IMPORT AUDIO
@@ -100,7 +101,7 @@
     </main>
     <div class="bottom">
       <span>01 — NIGHT DISTRICT</span
-      ><span>SAUTEZ / GLISSEZ / SYNCHRONISEZ</span><span>BUILD 04.00</span>
+      ><span>SAUTEZ / GLISSEZ / SYNCHRONISEZ</span><span>BUILD 04.10</span>
     </div>
     <dialog id="network-panel">
       <h2>DUO À DISTANCE</h2>
@@ -133,6 +134,6 @@
       <button id="network-close">FERMER</button
       ><button id="disconnect">DÉCONNECTER</button>
     </dialog>
-    <script type="module" src="src/main.js?v=4.0.0"></script>
+    <script type="module" src="src/main.js?v=4.1.0"></script>
   </body>
 </html>

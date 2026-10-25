@@ -1,6 +1,6 @@
-import { CONFIG, OBSTACLES, SEQUENCES } from "./config.js?v=4.0.0";
-import { buildLevel } from "./sequences.js?v=4.0.0";
-import { driveAI } from "./ai.js?v=4.0.0";
+import { CONFIG, OBSTACLES, SEQUENCES, WEAPON } from "./config.js?v=4.1.0";
+import { buildLevel } from "./sequences.js?v=4.1.0";
+import { driveAI } from "./ai.js?v=4.1.0";
 const EPS = 1e-8;
 export class Game {
   constructor() {
@@ -18,6 +18,8 @@ export class Game {
       weapon: 0,
       weaponCD: 0,
       weaponAge: 0,
+      weaponReleased: false,
+      weaponTarget: null,
       slide: 0,
       inv: 0,
       shield: 0,
@@ -72,9 +74,9 @@ export class Game {
     if (this.status !== "running") return false;
     const p = this.players[id];
     if (!p || p.hp <= 0) return false;
-    const r = Math.max(1, this.speed / 135);
+    const r = 1;
     if (key === "switch") return this.requestSwitch(id);
-    if (key === "jump" && p.y === 0 && !p.power && !p.weapon) {
+    if (key === "jump" && p.y === 0) {
       p.vy = CONFIG.jump * r;
       p.slide = 0;
       p.impulse = 0.07;
@@ -82,36 +84,25 @@ export class Game {
       this.emit("jump", CONFIG.playerX, p.lane);
       return true;
     }
-    if (key === "slide" && p.y === 0 && !p.power && !p.weapon) {
-      p.slide = 1.5 / r;
+    if (key === "slide" && p.y === 0) {
+      p.slide = 1.1;
       return true;
     }
-    if (key === "power" && p.energy <= 0 && !p.weapon) {
-      p.power = 0.95 / r;
+    if (key === "power" && p.energy <= 0) {
+      p.power = 0.8;
       p.energy = CONFIG.cooldown;
       p.slide = 0;
       this.emit("power", CONFIG.playerX, p.lane);
       return true;
     }
-    if (key === "weapon" && p.weaponCD <= 0 && !p.power && !p.slide) {
-      if (id === 0) {
-        const target = this.findBowTarget(p);
-        if (!target) {
-          this.say("ARC · AUCUNE CIBLE À PORTÉE");
-          return false;
-        }
-        this.projectiles.push({
-          x: CONFIG.playerX + 22,
-          lane: p.lane,
-          target: target.id,
-          life: 1.1,
-        });
-        this.stats.arrows++;
-      } else this.stats.swords++;
-      p.weapon = 0.38;
+    if (key === "weapon" && p.weaponCD <= 0) {
+      if (id === 0) p.weaponTarget = this.findBowTarget(p)?.id ?? null;
+      else this.stats.swords++;
+      p.weapon = WEAPON.duration;
+      p.weaponReleased = false;
       p.weaponAge = 0;
       p.weaponCD = CONFIG.weaponCooldown;
-      this.emit(id === 0 ? "arrow" : "sword", CONFIG.playerX, p.lane);
+      this.emit(id === 0 ? "draw" : "sword", CONFIG.playerX, p.lane);
       return true;
     }
     return false;
@@ -122,7 +113,7 @@ export class Game {
         (o) =>
           !o.hit &&
           o.x > CONFIG.playerX + 10 &&
-          o.x < CONFIG.playerX + 600 &&
+          o.x < CONFIG.playerX + WEAPON.bowRange &&
           (o.type === "target" ||
             (o.type === "giant" && o.protected) ||
             (o.type === "drone" && o.lane === p.lane)),
@@ -166,7 +157,10 @@ export class Game {
     return !this.schedule.some((o) => {
       const d = OBSTACLES[o.type];
       return (
-        d && o.at - 0.8 <= hi && o.at + (d.w + 12) / this.speed + 0.8 >= lo
+        d &&
+        !d.mechanism &&
+        o.at - 0.8 <= hi &&
+        o.at + (d.w + 12) / this.speed + 0.8 >= lo
       );
     });
   }
@@ -276,11 +270,14 @@ export class Game {
     this.messageTime = Math.max(0, this.messageTime - dt);
     this.switching = Math.max(0, this.switching - dt);
     this.timers();
-    const idx = Math.floor(this.time / CONFIG.segmentSeconds);
-    if (idx !== this.sequenceIndex) {
-      this.sequenceIndex = idx;
-      const seq = SEQUENCES[idx % SEQUENCES.length];
-      this.say(seq.label);
+    const current = this.schedule
+      .filter(
+        (o) => o.segmentStart !== undefined && o.segmentStart <= this.time,
+      )
+      .sort((a, b) => b.segmentStart - a.segmentStart)[0];
+    if (current && current.segmentStart !== this.sequenceIndex) {
+      this.sequenceIndex = current.segmentStart;
+      this.say(current.label);
     }
     for (const item of this.schedule) {
       if (
@@ -289,7 +286,10 @@ export class Game {
       ) {
         this.objects.push({
           ...item,
-          x: CONFIG.playerX + (item.at - this.time) * this.speed,
+          x:
+            CONFIG.playerX +
+            (item.at - this.time) * this.speed +
+            (item.offsetX || 0),
           hit: false,
         });
         this.spawned.add(item.id);
@@ -297,7 +297,8 @@ export class Game {
     }
     for (const o of this.objects) {
       if (o.at !== undefined)
-        o.x = CONFIG.playerX + (o.at - this.time) * this.speed;
+        o.x =
+          CONFIG.playerX + (o.at - this.time) * this.speed + (o.offsetX || 0);
       else o.x -= this.speed * dt;
       if (o.deathLife) o.deathLife -= dt;
     }
@@ -315,7 +316,31 @@ export class Game {
       ])
         p[key] = Math.max(0, p[key] - dt);
       if (p.weapon) p.weaponAge += dt;
-      const r = Math.max(1, this.speed / 135);
+      if (
+        p.id === 0 &&
+        p.weaponAge >= WEAPON.release &&
+        !p.weaponReleased &&
+        p.weapon > 0
+      ) {
+        p.weaponReleased = true;
+        const target =
+          this.objects.find((o) => o.id === p.weaponTarget && !o.hit) ||
+          this.findBowTarget(p);
+        this.projectiles.push({
+          x: CONFIG.playerX + 75,
+          lane: p.lane,
+          fromLane: p.lane,
+          fromY: p.y + 75,
+          y: p.y + 75,
+          originX: CONFIG.playerX + 75,
+          target: target?.id ?? null,
+          life: 1.4,
+        });
+        this.stats.arrows++;
+        this.emit("arrow", CONFIG.playerX, p.lane);
+      }
+
+      const r = 1;
       if (p.y > 0 || p.vy > 0) {
         p.y += p.vy * dt;
         p.vy -= CONFIG.gravity * r * r * dt;
@@ -329,13 +354,23 @@ export class Game {
     for (let id = 0; id < 2; id++) if (this.ai[id]) driveAI(this, id);
     for (const arrow of this.projectiles) {
       arrow.life -= dt;
-      arrow.x += 1000 * dt;
+      arrow.x += WEAPON.arrowSpeed * dt;
       const target = this.objects.find((o) => o.id === arrow.target && !o.hit);
       if (!target) {
-        arrow.life = 0;
+        arrow.target = null;
         continue;
       }
-      arrow.lane = target.lane < 0 ? 0 : target.lane;
+      const targetY =
+        target.type === "target" ? 240 : target.type === "drone" ? 195 : 75;
+      arrow.toLane = target.lane < 0 ? 0 : target.lane;
+      arrow.targetHeight = targetY;
+      arrow.targetX = target.x;
+      const progress = Math.min(
+        1,
+        (arrow.x - arrow.originX) / Math.max(1, target.x - arrow.originX),
+      );
+      arrow.progress = progress;
+      arrow.y = arrow.fromY + (targetY - arrow.fromY) * progress;
       if (arrow.x >= target.x) {
         arrow.life = 0;
         if (target.type === "giant") {
@@ -376,14 +411,15 @@ export class Game {
         }
         continue;
       }
+      if (d.mechanism) continue;
       const dx = o.x - CONFIG.playerX;
       const sword = this.players[1];
       if (
         d.weapon === 1 &&
         !o.protected &&
         sword.weapon > 0 &&
-        sword.weaponAge >= 0.06 &&
-        sword.weaponAge <= 0.3 &&
+        sword.weaponAge + EPS >= WEAPON.swordStart &&
+        sword.weaponAge <= WEAPON.swordEnd &&
         (o.lane < 0 || o.lane === sword.lane) &&
         dx < 125 &&
         dx > -20

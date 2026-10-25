@@ -1,0 +1,159 @@
+{
+  "width": 320,
+  "height": 220,
+  "columns": 10,
+  "rows": 4,
+  "layers": {
+    "weaponUpper": 2,
+    "gaitLower": 3
+  },
+  "anchor": {
+    "x": 130,
+    "y": 210
+  },
+  "frames": [
+    {
+      "action": "run",
+      "frame": 0,
+      "legSource": 0,
+      "lead": "right",
+      "contact": true
+    },
+    {
+      "action": "run",
+      "frame": 1,
+      "legSource": 1,
+      "lead": "right",
+      "contact": false
+    },
+    {
+      "action": "run",
+      "frame": 2,
+      "legSource": 2,
+      "lead": "right",
+      "contact": false
+    },
+    {
+      "action": "run",
+      "frame": 3,
+      "legSource": 9,
+      "lead": "right",
+      "contact": false
+    },
+    {
+      "action": "run",
+      "frame": 4,
+      "legSource": "left",
+      "lead": "left",
+      "contact": false
+    },
+    {
+      "action": "run",
+      "frame": 5,
+      "legSource": "left",
+      "lead": "left",
+      "contact": true
+    },
+    {
+      "action": "run",
+      "frame": 6,
+      "legSource": "left",
+      "lead": "left",
+      "contact": false
+    },
+    {
+      "action": "run",
+      "frame": 7,
+      "legSource": 9,
+      "lead": "right",
+      "contact": false
+    },
+    {
+      "action": "run",
+      "frame": 8,
+      "legSource": 2,
+      "lead": "right",
+      "contact": false
+    },
+    {
+      "action": "run",
+      "frame": 9,
+      "legSource": 6,
+      "lead": "right",
+      "contact": false
+    },
+    {
+      "action": "weapon",
+      "frame": 0,
+      "legSource": 0,
+      "lead": "right",
+      "contact": true
+    },
+    {
+      "action": "weapon",
+      "frame": 1,
+      "legSource": 1,
+      "lead": "right",
+      "contact": false
+    },
+    {
+      "action": "weapon",
+      "frame": 2,
+      "legSource": 2,
+      "lead": "right",
+      "contact": false
+    },
+    {
+      "action": "weapon",
+      "frame": 3,
+      "legSource": 9,
+      "lead": "right",
+      "contact": false
+    },
+    {
+      "action": "weapon",
+      "frame": 4,
+      "legSource": "left",
+      "lead": "left",
+      "contact": false
+    },
+    {
+      "action": "weapon",
+      "frame": 5,
+      "legSource": "left",
+      "lead": "left",
+      "contact": true
+    },
+    {
+      "action": "weapon",
+      "frame": 6,
+      "legSource": "left",
+      "lead": "left",
+      "contact": false
+    },
+    {
+      "action": "weapon",
+      "frame": 7,
+      "legSource": 9,
+      "lead": "right",
+      "contact": false
+    },
+    {
+      "action": "weapon",
+      "frame": 8,
+      "legSource": 2,
+      "lead": "right",
+      "contact": false
+    },
+    {
+      "action": "weapon",
+      "frame": 9,
+      "legSource": 6,
+      "lead": "right",
+      "contact": false
+    }
+  ],
+  "weaponDuration": 0.8,
+  "releaseFrame": 7,
+  "sourceNote": "Registered illustrated torso frames and painted lower-body poses. Explicit opposite-leg contact image. Some intermediate leg poses are reused, all full weapon frames are separately composed."
+}

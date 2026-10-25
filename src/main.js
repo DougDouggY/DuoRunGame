@@ -1,7 +1,7 @@
-import { PeerSession } from "./network.js?v=4.0.0";
-import { Game } from "./game.js?v=4.0.0";
-import { Renderer } from "./render.js?v=4.0.0";
-import { loadAssets } from "./assets.js?v=4.0.0";
+import { PeerSession } from "./network.js?v=4.1.0";
+import { Game } from "./game.js?v=4.1.0";
+import { Renderer } from "./render.js?v=4.1.0";
+import { loadAssets } from "./assets.js?v=4.1.0";
 const canvas = document.querySelector("canvas"),
   overlay = document.querySelector("#overlay");
 const game = new Game();
@@ -97,9 +97,14 @@ const keys = {
   ArrowDown: [1, "slide"],
   ArrowRight: [1, "power"],
   "/": [1, "weapon"],
-  Enter: [1, "switch"],
 };
 addEventListener("keydown", (e) => {
+  if (
+    e.target instanceof HTMLInputElement ||
+    e.target instanceof HTMLTextAreaElement ||
+    e.target instanceof HTMLSelectElement
+  )
+    return;
   const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
   if (keys[key] || key === "Escape") e.preventDefault();
   if (e.repeat) return;
@@ -107,6 +112,15 @@ addEventListener("keydown", (e) => {
     pause();
     return;
   }
+  if (key === " " && !network.connected) {
+    const id =
+      game.switchState.phase === "request"
+        ? game.switchState.confirmed.findIndex((v) => !v)
+        : 0;
+    if (id >= 0 && !game.ai[id]) game.action(id, "switch");
+    return;
+  }
+  if (key === "Enter") return;
   const action = keys[key];
   if (action) {
     if (network.connected) {

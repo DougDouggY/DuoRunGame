@@ -1,26 +1,26 @@
 export const SPEEDS = [
-  { value: 100, name: "Découverte" },
-  { value: 180, name: "Lente" },
-  { value: 280, name: "Moyenne" },
-  { value: 400, name: "Rapide" },
-  { value: 560, name: "Cauchemardesque" },
+  { value: 180, name: "Découverte" },
+  { value: 280, name: "Lente" },
+  { value: 400, name: "Moyenne" },
+  { value: 600, name: "Rapide" },
+  { value: 800, name: "Cauchemardesque" },
 ];
 export const CONFIG = {
-  speed: 100,
-  gravity: 1120,
-  jump: 590,
+  speed: 180,
+  gravity: 800,
+  jump: 520,
   playerX: 300,
-  levelSeconds: 224,
+  levelSeconds: 137.6,
   switchWindow: 2,
   switchHold: 5,
   switchDuration: 0.35,
   switchCooldown: 3,
   cooldown: 4,
   weaponCooldown: 1.5,
-  segmentSeconds: 14,
+  segmentSeconds: 6.8,
 };
 export const OBSTACLES = {
-  crate: { w: 40, h: 44, action: "jump" },
+  crate: { w: 66, h: 68, action: "jump" },
   spikes: { w: 48, h: 28, action: "jump" },
   gap: { w: 58, h: 8, action: "jump" },
   barrier: { w: 65, h: 124, action: "slide" },
@@ -28,7 +28,8 @@ export const OBSTACLES = {
   electric: { w: 48, h: 120, owner: 0 },
   armored: { w: 54, h: 84, owner: 1 },
   drone: { w: 54, h: 90, weapon: 0 },
-  target: { w: 36, h: 80, weapon: 0 },
+  target: { w: 48, h: 66, mechanism: true },
+  door: { w: 74, h: 150, locked: true },
   plant: { w: 64, h: 105, weapon: 1 },
   giant: { w: 100, h: 180, weapon: 1 },
 };
@@ -55,8 +56,14 @@ export const SEQUENCES = [
     id: "bow-drone",
     kind: "A",
     label: "R · ARC : DRONE / INTERRUPTEUR",
-    pair: ["drone", "crate"],
+    pair: ["door", "crate"],
     extra: "target",
+  },
+  {
+    id: "laser-drone",
+    kind: "A",
+    label: "R · DÉTRUISEZ LE DRONE ET SON LASER",
+    pair: ["drone", "barrier"],
   },
   {
     id: "sword-plant",
@@ -122,4 +129,13 @@ export const RUN_SPRITES = {
     [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
     [12, 13, 14, 15, 16, 17, 18, 19, 20, 22, 23],
   ],
+};
+
+export const WEAPON = {
+  duration: 0.8,
+  release: 0.56,
+  swordStart: 0.4,
+  swordEnd: 0.64,
+  arrowSpeed: 1600,
+  bowRange: 1100,
 };

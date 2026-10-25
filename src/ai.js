@@ -1,4 +1,4 @@
-import { CONFIG, OBSTACLES } from "./config.js?v=4.0.0";
+import { CONFIG, OBSTACLES, WEAPON } from "./config.js?v=4.1.0";
 export function driveAI(g, id) {
   if (g.status !== "running") return;
   const p = g.players[id],
@@ -42,7 +42,7 @@ export function driveAI(g, id) {
   if (
     d.action === "jump" &&
     p.y === 0 &&
-    dx < (target.type === "gap" ? 26 : 36) &&
+    dx < 12 + g.speed * (target.type === "gap" ? 0.2 : 0.27) &&
     dx > 0
   )
     g.action(id, "jump");
@@ -54,7 +54,7 @@ export function driveAI(g, id) {
     id === 1 &&
     d.weapon === 1 &&
     !target.protected &&
-    dx < 100 &&
+    dx < 90 + g.speed * WEAPON.swordStart &&
     dx > 0 &&
     p.weaponCD <= 0
   )

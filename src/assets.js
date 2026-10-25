@@ -1,7 +1,16 @@
-import { CHARACTER_ASSETS } from "./config.js?v=4.0.0";
+import { CHARACTER_ASSETS } from "./config.js?v=4.1.0";
 export async function loadAssets() {
   const paths = {
-    run: "assets/characters/run-v4.png",
+    neonCompiled: "assets/characters/v41/neon-compiled.png",
+    indaCompiled: "assets/characters/v41/inda-compiled.png",
+    knight: "assets/obstacles/v41/0.png",
+    knightImpact: "assets/obstacles/v41/1.png",
+    crateBright: "assets/obstacles/v41/2.png",
+    door: "assets/obstacles/v41/3.png",
+    ceilingSwitch: "assets/obstacles/v41/4.png",
+    ceilingSwitchOn: "assets/obstacles/v41/5.png",
+    laserDrone: "assets/obstacles/v41/6.png",
+    laserDroneDead: "assets/obstacles/v41/7.png",
     maw: "assets/monsters/maw.png",
     industrial: "assets/obstacles/industrial.png",
     city: "assets/backgrounds/city.png",

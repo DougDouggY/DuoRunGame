@@ -21,7 +21,7 @@ try {
   await page.waitForFunction(() => window.duoRush);
   assert.equal(
     await page.evaluate(() => Object.keys(duoRush.renderer.assets).length),
-    9,
+    18,
   );
   assert.ok(!(await page.locator("body").innerText()).includes("SWONNI"));
   assert.ok(!(await page.title()).includes("NEON RUSH"));
@@ -47,6 +47,11 @@ try {
     "request",
   );
   await page.keyboard.press("Enter");
+  assert.equal(
+    await page.evaluate(() => duoRush.game.switchState.phase),
+    "request",
+  );
+  await page.keyboard.press("Space");
   assert.deepEqual(
     await page.evaluate(() => duoRush.game.players.map((p) => p.lane)),
     [1, 0],
@@ -68,19 +73,19 @@ try {
     g.objects = [{ id: 100, type: "drone", lane: 0, x: 650 }];
   });
   await page.keyboard.press("r");
-  assert.ok(await page.evaluate(() => duoRush.game.projectiles.length > 0));
+  await page.waitForFunction(() => duoRush.game.projectiles.length > 0);
   await page.waitForFunction(() => duoRush.game.objects[0]?.hit);
   await page.keyboard.press("/");
   assert.ok(await page.evaluate(() => duoRush.game.players[1].weapon > 0));
   // All four authored situations and real AI actions, sampled through full browser simulation.
-  for (const speed of [100, 180, 280, 400, 560]) {
+  for (const speed of [180, 280, 400, 600, 800]) {
     const result = await page.evaluate((speed) => {
       const g = duoRush.game;
       g.reset();
       g.speed = speed;
       g.status = "running";
       g.ai = [true, true];
-      g.update(224.01);
+      g.update(137.61);
       return {
         status: g.status,
         damage: g.stats.damage,
@@ -99,7 +104,7 @@ try {
     g.speed = 180;
     g.ai = [true, true];
     g.status = "running";
-    g.update(104.3);
+    g.update(g.schedule.find((o) => o.type === "giant").at - 2.7);
     document.querySelector("#overlay").classList.add("hidden");
   });
   await page.screenshot({ path: "assets/screenshot-v4-landscape.png" });
@@ -109,7 +114,7 @@ try {
     g.speed = 180;
     g.ai = [true, true];
     g.status = "running";
-    g.update(89.95);
+    g.update(g.schedule.find((o) => o.sequence === "double-swap").at - 1.9);
     document.querySelector("#overlay").classList.add("hidden");
   });
   await page.screenshot({ path: "assets/screenshot-v4-switch.png" });
@@ -125,7 +130,7 @@ try {
   assert.deepEqual(await page.evaluate(() => duoRush.game.ai), [true, true]);
   assert.deepEqual(errors, []);
   console.log(
-    "Chromium PASS: 9 images, V4 keys, weapons/projectile, 2s request, 5s return/pause, 5 full AI levels, demo, landscape/switch/portrait. No console or HTTP errors.",
+    "Chromium PASS: 18 images, V4 keys, weapons/projectile, Space-only request/confirm, 5s return/pause, 5 full AI levels, demo, landscape/switch/portrait. No console or HTTP errors.",
   );
 } finally {
   await browser.close();

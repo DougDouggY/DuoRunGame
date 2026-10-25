@@ -1,15 +1,24 @@
-import { CONFIG, SEQUENCES, OBSTACLES } from "./config.js?v=4.0.0";
-// Authored encounter times, not random obstacle spawning. Every 14 s segment has
-// one encounter cluster and a guaranteed empty return corridor (last 4 seconds).
+import { CONFIG, SEQUENCES, OBSTACLES } from "./config.js?v=4.1.0";
+// Authored 6.8 s classic clusters; coop clusters reserve a safe return corridor
+// and append a classic exit pair. Actual encounter gaps are all <= 6.8 s.
 export function buildLevel(rounds = 2) {
   const out = [];
-  let uid = 0;
+  let uid = 0,
+    cursor = 0;
   for (let round = 0; round < rounds; round++)
     for (let i = 0; i < SEQUENCES.length; i++) {
       const s = SEQUENCES[i],
-        start = (round * SEQUENCES.length + i) * CONFIG.segmentSeconds,
-        at = start + 8;
-      const common = { sequence: s.id, kind: s.kind, at, swap: !!s.swap };
+        start = cursor,
+        at = start + (s.swap ? 4.8 : 5);
+      cursor += s.swap ? 10.6 : CONFIG.segmentSeconds;
+      const common = {
+        sequence: s.id,
+        kind: s.kind,
+        at,
+        swap: !!s.swap,
+        segmentStart: start,
+        label: s.label,
+      };
       if (s.giant)
         out.push({
           ...common,
@@ -30,13 +39,25 @@ export function buildLevel(rounds = 2) {
           id: ++uid,
           type: "target",
           lane: 0,
-          at: at - 3,
+          at,
+          offsetX: -260,
           links: out
             .filter(
-              (o) => o.sequence === s.id && o.at === at && o.type === "crate",
+              (o) => o.sequence === s.id && o.at === at && o.type === "door",
             )
             .map((o) => o.id),
         });
+      if (s.swap) {
+        for (let lane = 0; lane < 2; lane++)
+          out.push({
+            id: ++uid,
+            type: lane ? "barrier" : "crate",
+            lane,
+            at: start + 10.6,
+            sequence: s.id + "-exit",
+            kind: "A",
+          });
+      }
       if (i % 3 === 1)
         out.push({
           id: ++uid,
@@ -51,13 +72,12 @@ export function buildLevel(rounds = 2) {
 export function validateLevel(level, speed) {
   const errors = [];
   for (const o of level) {
-    if (!OBSTACLES[o.type]) continue;
+    if (!OBSTACLES[o.type] || OBSTACLES[o.type].mechanism) continue;
     if (o.at < 4) errors.push("Pas de préparation");
     if (o.swap) {
-      const end = o.at + 3.5;
+      const end = o.at + 2.92;
       const conflict = level.find(
-        (n) =>
-          OBSTACLES[n.type] && n.id !== o.id && Math.abs(n.at - end) < 1.25,
+        (n) => OBSTACLES[n.type] && n.id !== o.id && Math.abs(n.at - end) < 0.7,
       );
       if (conflict) errors.push(`Retour encombré ${o.sequence}`);
     }

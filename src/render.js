@@ -5,7 +5,8 @@ import {
   SPRITES,
   SPEEDS,
   RUN_SPRITES,
-} from "./config.js?v=4.0.0";
+  WEAPON,
+} from "./config.js?v=4.1.0";
 export class Renderer {
   constructor(canvas, assets) {
     this.canvas = canvas;
@@ -229,13 +230,47 @@ export class Renderer {
       }
       c.shadowBlur = 0;
     }
+    const compiled =
+      ["run", "weapon", "power"].includes(state) &&
+      this.assets[p.id ? "indaCompiled" : "neonCompiled"];
     const running = state === "run" && this.assets.run;
+    if (compiled) {
+      const gaitFrame = Math.floor(t * Math.min(60, speed / 16)) % 10;
+      const frame = p.weapon
+        ? Math.min(9, Math.floor((p.weaponAge / WEAPON.duration) * 10))
+        : gaitFrame;
+      const scale = this.w < 1000 ? 0.8 : 1;
+      this.glow(p.id ? "#38dbff" : "#4c74ff", p.power ? 16 : 4);
+      if (p.power && !p.id) {
+        c.globalAlpha *= 0.68;
+        c.globalCompositeOperation = "screen";
+      }
+      const draw = (f, row) =>
+        c.drawImage(
+          compiled,
+          f * 320,
+          row * 220,
+          320,
+          220,
+          -130 * scale,
+          -210 * scale,
+          320 * scale,
+          220 * scale,
+        );
+      if (p.weapon) {
+        draw(gaitFrame, 3);
+        draw(frame, 2);
+      } else draw(frame, 0);
+      c.globalCompositeOperation = "source-over";
+      c.shadowBlur = 0;
+    }
+
     const img = running
       ? this.assets.run
       : p.id === 0
         ? this.assets.neonActions
         : this.assets.actions;
-    if (img) {
+    if (img && !compiled) {
       let sx,
         sy,
         sw,
@@ -286,7 +321,7 @@ export class Renderer {
       );
       c.globalCompositeOperation = "source-over";
       c.shadowBlur = 0;
-    } else {
+    } else if (!compiled) {
       this.text("ASSET EN CHARGEMENT", 0, -60, 10, col);
     }
     this.weapons(p);
@@ -304,6 +339,10 @@ export class Renderer {
   obstacle(o, g) {
     if (o.type === "plant" || o.type === "giant") {
       this.monster(o, g);
+      return;
+    }
+    if (["crate", "door", "target", "drone"].includes(o.type)) {
+      this.newObstacle(o, g);
       return;
     }
     if (o.hit) return;
@@ -585,65 +624,141 @@ export class Renderer {
       "#a1bbd4",
       "right",
     );
-    this.text("ESPACE + ENTRÉE  ⇄", w - 20, 55, 13, "#6addfa", "right");
+    this.text("ESPACE · SWITCH  ⇄", w - 20, 55, 13, "#6addfa", "right");
     c.restore();
   }
   weapons(p) {
     const c = this.ctx;
     if (p.power && p.id === 1) {
-      this.glow("#45e5ff", 20);
-      c.fillStyle = "#075174dd";
-      c.strokeStyle = "#a1f7ff";
-      c.lineWidth = 3;
-      c.beginPath();
-      c.moveTo(22, -104);
-      c.lineTo(63, -87);
-      c.lineTo(59, -44);
-      c.lineTo(38, -26);
-      c.lineTo(17, -48);
-      c.closePath();
-      c.fill();
-      c.stroke();
-      this.text("IV", 38, -64, 18, "#8cf7ff", "center");
-      c.shadowBlur = 0;
-    }
-    if (!p.weapon) return;
-    const age = p.weaponAge,
-      alpha = Math.min(1, age / 0.06, (0.4 - age) / 0.08);
-    c.save();
-    c.globalAlpha *= Math.max(0, alpha);
-    this.glow(p.id ? "#ff8ee3" : "#5faaff", 16);
-    if (p.id === 0) {
-      c.strokeStyle = "#8bcbff";
-      c.lineWidth = 3;
-      c.beginPath();
-      c.arc(29, -70, 36, -1.3, 1.3);
-      c.stroke();
-      c.beginPath();
-      c.moveTo(39, -105);
-      c.lineTo(20 + Math.min(age / 0.12, 1) * 12, -70);
-      c.lineTo(39, -35);
-      c.stroke();
-      if (age < 0.12) {
-        c.strokeStyle = "#f5faff";
-        c.beginPath();
-        c.moveTo(13, -70);
-        c.lineTo(84, -70);
-        c.stroke();
+      const img = this.assets[p.power < 0.45 ? "knightImpact" : "knight"];
+      if (img) {
+        c.save();
+        c.translate(35, -52);
+        c.rotate(-0.12);
+        this.glow("#4eeaff", 20);
+        const h = 118,
+          w = (h * img.width) / img.height;
+        c.drawImage(img, -w / 2, -h / 2, w, h);
+        c.shadowBlur = 0;
+        c.restore();
       }
-    } else {
-      c.translate(26, -65);
-      c.rotate(-1.8 + Math.min(age / 0.28, 1) * 3.4);
-      c.fillStyle = "#dcf8ff";
-      c.fillRect(-3, -81, 6, 90);
-      c.fillStyle = "#ff54cb";
-      c.fillRect(-13, 3, 26, 5);
-      c.strokeStyle = "#fc76dd";
-      c.lineWidth = 12;
-      c.globalAlpha *= 0.4;
+    }
+  }
+  newObstacle(o, g) {
+    const c = this.ctx,
+      floor = this.floor(o.lane),
+      d = OBSTACLES[o.type];
+    if (o.hit && (!o.deathLife || o.deathLife <= 0)) return;
+    c.save();
+    c.translate(o.x, floor);
+    if (o.hit) c.globalAlpha = Math.max(0, o.deathLife / 0.6);
+    if (o.type === "crate") {
+      const img = this.assets.crateBright;
+      if (img) {
+        this.glow("#ffbd45", 11);
+        c.drawImage(img, -4, -d.h - 3, d.w + 8, d.h + 3);
+        c.shadowBlur = 0;
+      }
+      c.strokeStyle = "#ffc34b";
+      c.lineWidth = 2;
+      c.strokeRect(-4, -d.h - 3, d.w + 8, d.h + 3);
+      this.text("A / ↑ · SAUT", d.w / 2, -d.h - 13, 11, "#ffe1a0", "center");
+    }
+    if (o.type === "door") {
+      const img = this.assets.door;
+      const retract = o.hit ? 1 - o.deathLife / 0.6 : 0;
+      if (img) {
+        c.save();
+        c.beginPath();
+        c.rect(-12, -d.h, 110, d.h);
+        c.clip();
+        this.glow(o.hit ? "#4affc8" : "#fb42c5", 12);
+        const w = (d.h * img.width) / img.height;
+        c.drawImage(img, (d.w - w) / 2, -d.h - retract * d.h, w, d.h);
+        c.restore();
+      }
+      this.text(
+        o.hit ? "PORTE OUVERTE" : "PORTE · INTERRUPTEUR ↑",
+        d.w / 2,
+        -d.h - 13,
+        11,
+        o.hit ? "#7bffcf" : "#ff9ee5",
+        "center",
+      );
+    }
+    if (o.type === "target") {
+      const img = this.assets[o.hit ? "ceilingSwitchOn" : "ceilingSwitch"];
+      const h = 91,
+        w = img ? (h * img.width) / img.height : 60;
+      const y = -270;
+      this.glow(o.hit ? "#6cffaa" : "#50ddff", 15);
+      if (img) c.drawImage(img, d.w / 2 - w / 2, y, w, h);
+      c.shadowBlur = 0;
+      c.strokeStyle = "#293c5c";
+      c.lineWidth = 5;
       c.beginPath();
-      c.arc(-20, 10, 72, -1.6, 0.5);
+      c.moveTo(-30, y);
+      c.lineTo(85, y);
       c.stroke();
+      this.text(
+        o.hit ? "ACTIVÉ" : "R · INTERRUPTEUR",
+        d.w / 2,
+        y - 10,
+        11,
+        o.hit ? "#8affb5" : "#a4eeff",
+        "center",
+      );
+      if (!o.hit && o.links) {
+        for (const id of o.links) {
+          const door = g.objects.find((n) => n.id === id && !n.hit);
+          if (door) {
+            c.strokeStyle = "#5ac8f86b";
+            c.lineWidth = 1;
+            c.setLineDash([7, 8]);
+            c.beginPath();
+            c.moveTo(d.w / 2, y + 75);
+            c.lineTo(door.x - o.x + 37, -145);
+            c.stroke();
+            c.setLineDash([]);
+          }
+        }
+      }
+    }
+    if (o.type === "drone") {
+      const img = this.assets[o.hit ? "laserDroneDead" : "laserDrone"];
+      if (img) {
+        const w = 100,
+          h = (w * img.height) / img.width;
+        this.glow(o.hit ? "#ff914f" : "#ff4269", 12);
+        c.drawImage(
+          img,
+          d.w / 2 - w / 2,
+          -210 + Math.sin(g.time * 5) * 3,
+          w,
+          h,
+        );
+        c.shadowBlur = 0;
+      }
+      if (!o.hit) {
+        const x = d.w / 2,
+          y = -145;
+        this.glow("#ff235c", 19);
+        c.fillStyle = "#ef245d39";
+        c.fillRect(0, y, d.w, -y);
+        c.strokeStyle = "#ff667e";
+        c.lineWidth = 4;
+        c.beginPath();
+        c.moveTo(x, y);
+        c.lineTo(x, 0);
+        c.stroke();
+        c.strokeStyle = "#ffbdd1";
+        c.lineWidth = 1;
+        c.stroke();
+        c.fillStyle = "#ff688e";
+        c.fillRect(4, -2, d.w - 8, 3);
+        c.shadowBlur = 0;
+        this.text("R · DRONE LASER", x, -223, 11, "#ffb4cc", "center");
+      }
     }
     c.restore();
   }
@@ -698,7 +813,9 @@ export class Renderer {
   combatFX(g) {
     const c = this.ctx;
     for (const a of g.projectiles) {
-      const y = this.floor(a.lane) - 72;
+      const base = this.floor(a.fromLane ?? a.lane),
+        destination = this.floor(a.toLane ?? a.lane),
+        y = base + (destination - base) * (a.progress || 0) - (a.y ?? 75);
       this.glow("#66adff", 22);
       c.strokeStyle = "#c5efff";
       c.lineWidth = 3;

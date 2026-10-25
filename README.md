@@ -1,4 +1,4 @@
-# DUO RUSH — V4
+# DUO RUSH — V4.1
 
 Runner coopératif Canvas 2D, deux routes visibles, ville nocturne illustrée conservée de la V3. NÉON IV (femme, veste noire et longs cheveux, électricité bleue) commence en haut ; INDAFRENCH (cagoule blanche, t-shirt noir, cyan/glitch) commence en bas.
 
@@ -23,11 +23,11 @@ Avant la partie, choisir la vitesse puis **Entrer dans la ville**. L’IA InDaFr
 
 Les commandes restent attachées au personnage après un échange. Le bouton ↻ recommence. L’aide affiche les touches ; lancer une nouvelle partie depuis l’aide remet le niveau à zéro. La pause conserve les timers. Perdre le focus met la partie hôte/locale en pause.
 
-**Cinq vitesses fixes :** Découverte 100, Lente 180, Moyenne 280, Rapide 400, Cauchemardesque 560 px/s. Choix avant la partie, aucune accélération ni modification en cours de partie. Les foulées, la physique et les espacements s’adaptent. Deux cycles de huit séquences, **224 secondes actives** au total ; la distance dépend de la vitesse.
+**Cinq vitesses fixes :** Découverte 180, Lente 280, Moyenne 400, Rapide 600, Cauchemardesque 800 px/s. Choix avant la partie, aucune accélération ni modification en cours de partie. Les foulées, la physique et les espacements s’adaptent. Deux cycles de neuf séquences, **137,6 secondes actives** au total ; la distance dépend de la vitesse.
 
 ## SWITCH temporaire
 
-1. Espace / Entrée ouvre une demande **2 secondes** et le bandeau « SWITCH ! ». Un joueur ne peut pas confirmer deux fois sa propre demande.
+1. **Espace uniquement** ouvre la demande de 2 secondes. En clavier local partagé, le second appui sur Espace confirme pour l’autre personnage ; avec l’IA InDaFrench, elle confirme après 0,22 s. À distance, chaque joueur confirme avec Espace sur son ordinateur. Entrée n’est plus une commande du jeu.
 2. Confirmation de l’autre : routes échangées pendant **exactement 5 secondes de simulation active**, transition comprise. Compte à rebours visible, pause respectée, impossible de renouveler ou annuler.
 3. Retour simultané et automatique sur les routes d’origine. Transition de 0,35 s, protection de 0,45 s.
 4. Cooldown **3 secondes à compter du retour**. Une demande expirée impose également 3 secondes d’attente.
@@ -38,12 +38,12 @@ L’IA confirme après **0,22 s**, pas immédiatement. Elle peut demander une co
 
 - **Néon IV, E :** dash spectral bleu, traînées, éclairs, silhouette lumineuse. Neutralise seulement les murs électriques pendant la durée visible du pouvoir. Cooldown 4 s.
 - **InDaFrench, E :** bouclier sorti devant lui, impact, onde et débris. Détruit seulement les barricades blindées compatibles. Cooldown 4 s.
-- **Néon IV, R :** arc électrique, sélection automatique de la cible valide la plus proche dans une portée de 600 px ; vrai projectile et collision sur la cible. Détruit drones, active interrupteurs et désactive la protection d’un géant. Un interrupteur pédagogique ouvre aussi un passage de l’autre route.
-- **InDaFrench, R :** épée à portée de 125 px, frappe active entre 0,06 et 0,30 s après l’action. Détruit les Mâchoires et les géants **déprotégés**. Un coup lancé trop tôt ou contre une protection échoue. Cooldown des armes 1,5 s.
+- **Néon IV, R :** arc électrique, sélection automatique de la cible valide la plus proche dans une portée de 1 100 px ; vrai projectile et collision sur la cible. Détruit drones, active interrupteurs et désactive la protection d’un géant. Un interrupteur pédagogique ouvre aussi un passage de l’autre route.
+- **InDaFrench, R :** épée à portée de 125 px, frappe active entre 0,40 et 0,64 s après l’action. Détruit les Mâchoires et les géants **déprotégés**. Un coup lancé trop tôt ou contre une protection échoue. Cooldown des armes 1,5 s.
 
 Trois cœurs, invulnérabilité après dégât, bouclier consommable, cœur, recharge et notes à score commun. Un KO termine la partie. Les pouvoirs ne remplacent pas les armes, et aucun personnage ne remplace l’autre.
 
-Les séquences déterministes de 14 secondes remplacent le hasard libre :
+Les séquences classiques durent désormais **6,8 secondes**, contre 14 auparavant. Les séquences SWITCH réservent 10,6 s au retour sûr et ajoutent une paire d’obstacles à leur sortie : aucun intervalle entre rencontres ne dépasse 6,8 s.
 
 - **A :** pédagogie saut/glissade, pouvoirs propres, arc/drone/interrupteur, puis épée/Mâchoire.
 - **B :** blindage haut et caisse basse : échange requis pour attribuer le bouclier au bon parcours.
@@ -74,7 +74,7 @@ npm run test:browser
 npm run test:network
 ```
 
-- **16 tests de logique et de protocole** : vitesses, séquences, durée exacte de 5 s, demande expirée, double confirmation, pause, cooldown/retour sûr, quatre capacités, timing épée, mécanisme lié, bonus, KO/reset.
+- **21 tests de logique, sprites et protocole** : vitesses, séquences, durée exacte de 5 s, demande expirée, double confirmation, pause, cooldown/retour sûr, quatre capacités, timing épée, mécanisme lié, bonus, KO/reset.
 - Une simulation fait finir le niveau aux deux IA **aux cinq vitesses, sans dégât ni impact absorbé par un bouclier**, avec les collisions normales. Aucun HP modifié par l’IA, aucune invincibilité ni suppression d’obstacles. Chaque échange et sa durée sont contrôlés. Cela démontre la solvabilité du catalogue actuel, pas de tous les patterns imaginables ni la facilité humaine.
 - Chromium : touches réelles, ressources, projectiles, pause, SWITCH/retour, cinq niveaux IA, démo, paysage et portrait, erreurs console/HTTP.
 - Protocole réseau : quatre tests des paquets, actions de l’invité, snapshots et pause sur canaux de données simulés. Le test de connexion WebRTC réelle est **SKIP** : la politique Chromium gérée de ce cloud interdit l’UDP direct et ne produit aucun candidat ICE. La négociation complète, le canal réel et la connexion Internet/NAT restent non validés.
@@ -87,4 +87,15 @@ Captures issues de la simulation réelle, sans arrangement des obstacles : `asse
 
 Les illustrations de ville et les poses existantes sont conservées. Nouveaux atlas RGBA : course, obstacles industriels, Mâchoire. Voir [assets/ART.md](assets/ART.md). Les animations ne remplacent pas les silhouettes par des formes simples. Les armes et effets sont des tracés Canvas superposés aux personnages ; le monstre possède deux repos, trois attaques, morsure, quatre étapes de destruction et deux états de géant.
 
-**Limites assumées :** 12 frames de course pour Néon IV, 11 pour InDaFrench (une frame générée erronée écartée). Les foulées sont plus variées mais le calage des pieds, la morphologie et le raccord de boucle restent perfectibles. Les poses intermédiaires saut/glissade/récupération sont encore peu nombreuses ; dégâts et KO réutilisent des ressources V3, sans mort complète spécifique à chaque cause. Arc/épée/bouclier sont animés par parties superposées, sans nouveaux cycles de bras illustrés complets. Les atlas générés peuvent garder de légers halos ; l’animation n’est pas un pack professionnel finalisé. Le réseau distant est expérimental sans relais. Un playtest humain prolongé à deux et un test sur deux connexions Internet restent à faire.
+**Animations V4.1 :** chaque personnage possède un atlas PNG de 10 étapes de course et 10 étapes de course armée, plus deux lignes de couches séparées. La pose de contact opposée a été illustrée explicitement : jambe proche à couture cyan derrière, autre jambe devant. Les corps/armes et les bas de corps sont assemblés avec des repères fixes ; en jeu, les jambes poursuivent la foulée à la vitesse courante pendant que le haut du corps exécute le tir ou le coup ; certains intermédiaires de jambes sont réutilisés. Les atlas ne sont pas une animation dessinée intégralement à la main. Les raccords de taille, de vêtement et la boucle restent perfectibles. Les poses intermédiaires saut/glissade/récupération sont encore peu nombreuses ; dégâts et KO réutilisent des ressources V3, sans mort complète spécifique à chaque cause. Les dix poses illustrées de sortie/tension/tir/rangement d’arc et de dégainé/frappe/récupération d’épée gardent une foulée alternée. Le bouclier est une grande illustration de type chevalier, superposée au corps. Les atlas générés peuvent garder de légers halos ; l’animation n’est pas un pack professionnel finalisé. Le réseau distant est expérimental sans relais. Un playtest humain prolongé à deux et un test sur deux connexions Internet restent à faire.
+
+## Changements de jeu V4.1
+
+- Le saut dure environ **1,3 seconde**, à toutes les vitesses ; sa hauteur est d’environ 169 px. La glissade dure 1,1 s et E reste visible 0,8 s.
+- E et R peuvent être lancés sans obstacle et pendant les autres actions, sous réserve de leur cooldown. R tire aussi dans le vide : dix étapes sur 0,8 s, flèche réellement créée au lâcher (étape 7, à 0,56 s), puis vol à 1 600 px/s. L’IA adapte le début de son coup d’épée à la vitesse et à la nouvelle préparation.
+- L’interrupteur est au **plafond**, 260 px devant sa porte. Le tir l’active ; la porte liée se rétracte puis disparaît. Le câble lumineux rend le lien lisible. L’interrupteur n’inflige jamais de dégâts au sol.
+- Le drone vole en hauteur et projette un rayon rouge jusqu’au sol. Son rayon est dangereux ; détruire le drone coupe immédiatement le laser. Les portes et drones exigent des flèches, pas le dash ou le bouclier.
+- Les caisses passent à **66 × 68 px**, avec illustration et bordure ambre contrastée.
+- Les sources et PNG finaux sont dans `assets/characters/v41/`. Pour rebâtir les sprites après modification des poses : serveur actif, puis `npm run sprites:build`. Les fichiers JSON indiquent les repères et les poses droite/gauche. Le jeu charge les PNG déjà compilés ; aucun outil de génération n’est nécessaire pour jouer.
+
+`assets/screenshot-v41-combat.png` est une scène de contrôle disposée pour inspecter l’arc, le bouclier, la porte et le drone ; elle n’est pas une preuve de parcours humain. Les captures de niveau proviennent de la simulation réelle.

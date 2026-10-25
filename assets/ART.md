@@ -28,3 +28,11 @@ Le portrait individuel transmis ensuite dans le chat montre une femme encapuchon
 - `obstacles/industrial.png` : atlas RGBA 4×2, caisse, blindage, pylônes électriques, barrière haute, pics, drone, cible/interrupteur, laser. Illustrations réelles complétées par des arcs/pulsations animés Canvas.
 
 Ces ressources ont été générées pour cette évolution, examinées visuellement et chargées dans Chromium. Les armes (arc, épée, bouclier), particules, éclairs et ondes sont des parties animées Canvas. Les limites de régularité du cycle de course et des poses intermédiaires sont documentées dans le README, sans revendiquer une production d’animation professionnelle.
+
+## Sprites et accessoires V4.1
+
+Les PNG `characters/v41/neon-compiled.png` et `inda-compiled.png` ont 10 colonnes et quatre lignes : course, course avec arme, haut armé isolé et jambes isolées. Les deux dernières permettent de garder les jambes à la cadence de la vitesse de jeu pendant la préparation de l’arme. Les dix torses armés sont illustrés séparément ; les bas de corps reprennent des contacts et intermédiaires peints, avec repères fixes à la taille et aux pieds. `left-contact-source.png` fournit explicitement la pose opposée, avec la couture cyan sur la jambe arrière et la jambe unie en avant. Le compiler garde des appuis droite/gauche aussi pendant le tir ou l’épée. Certains intermédiaires de jambes sont réutilisés : ne pas présenter cela comme vingt dessins anatomiques uniques entièrement faits à la main. Les raccords du compositing peuvent encore être affinés.
+
+`src/sprite-compiler.js` et `tools/build-sprites.mjs` produisent les vrais atlas et leurs manifestes. Les PNG sont chargés tels quels au jeu : aucun étirement de personnage entier pour simuler une foulée. Les anciennes feuilles V4 restent disponibles pour les autres états.
+
+`obstacles/props-v41.png` est la source des accessoires détourés : grand bouclier de chevalier (repos/impact), caisse ambre, porte, interrupteur suspendu (off/on), drone (entier/détruit). Les images isolées se trouvent dans `obstacles/v41/`. Le laser du drone et les liaisons électriques de l’interrupteur restent des effets animés Canvas.
