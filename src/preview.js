@@ -1,4 +1,5 @@
-import { ANIMATION } from "./animation.js?v=4.2.0";
+import { SWORD_SEQUENCE } from "./motion.js?v=4.3.0";
+import { ANIMATION } from "./animation.js?v=4.3.0";
 export class AnimationPreview {
   constructor(assets) {
     this.assets = assets;
@@ -28,7 +29,7 @@ export class AnimationPreview {
   count() {
     return this.kind === "arrow"
       ? 1
-      : this.kind.endsWith("run")
+      : (this.kind.endsWith("run") || this.kind.endsWith("dash"))
         ? 12
         : this.kind.endsWith("bow")
           ? 16
@@ -75,6 +76,7 @@ export class AnimationPreview {
         this.c.drawImage(img, 140, 235 - h / 2, w, h);
       }
     } else if (this.kind.endsWith("run")) draw(run, this.frame);
+    else if (this.kind.endsWith("dash")) draw(this.assets.neonDash,this.frame);
     else {
       draw(run, Math.floor((this.frame / this.count()) * 12) % 12, 1);
       draw(
@@ -85,7 +87,7 @@ export class AnimationPreview {
               ? "indaSword"
               : "indaShield"
         ],
-        this.frame,
+        this.kind.endsWith("sword")?SWORD_SEQUENCE[this.frame]:this.frame,
       );
     }
     document.querySelector("#preview-count").textContent =

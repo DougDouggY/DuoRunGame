@@ -1,8 +1,8 @@
-import { AnimationPreview } from "./preview.js?v=4.2.0";
-import { PeerSession } from "./network.js?v=4.2.0";
-import { Game } from "./game.js?v=4.2.0";
-import { Renderer } from "./render.js?v=4.2.0";
-import { loadAssets } from "./assets.js?v=4.2.0";
+import { AnimationPreview } from "./preview.js?v=4.3.0";
+import { PeerSession } from "./network.js?v=4.3.0";
+import { Game } from "./game.js?v=4.3.0";
+import { Renderer } from "./render.js?v=4.3.0";
+import { loadAssets } from "./assets.js?v=4.3.0";
 const canvas = document.querySelector("canvas"),
   overlay = document.querySelector("#overlay");
 const game = new Game();

@@ -1,4 +1,5 @@
-import { ANIMATION, animationFrames } from "./animation.js?v=4.2.0";
+import {ambientMotion} from "./motion.js?v=4.3.0";
+import { ANIMATION, animationFrames } from "./animation.js?v=4.3.0";
 import {
   CONFIG,
   CHARACTER_ASSETS,
@@ -8,7 +9,9 @@ import {
   RUN_SPRITES,
   WEAPON,
   DRONE,
-} from "./config.js?v=4.2.0";
+  CEILING_SWITCH,
+  DASH,
+} from "./config.js?v=4.3.0";
 export class Renderer {
   constructor(canvas, assets) {
     this.canvas = canvas;
@@ -16,6 +19,7 @@ export class Renderer {
     this.assets = assets;
     this.w = 1440;
     this.h = 810;
+    this.poseBuffers=Array.from({length:2},()=>{const canvas=document.createElement('canvas');canvas.width=ANIMATION.width;canvas.height=ANIMATION.height;return canvas;});
     this.rain = Array.from({ length: 110 }, (_, i) => ({
       x: (i * 173) % 1440,
       y: (i * 137) % 810,
@@ -207,9 +211,7 @@ export class Renderer {
     if (p.inv > 0 && Math.floor(t * 15) % 2) c.globalAlpha = 0.45;
     if (p.hp <= 0) c.globalAlpha = 0.5;
     const state = p.pose;
-    let bounce =
-      state === "run" ? Math.sin(t * 16 * Math.sqrt(speed / 100)) * 2 : 0;
-    c.translate(x, y + bounce);
+    c.translate(x, y);
     c.scale(1 / (this.w / 1440), 1);
     if (p.shield) {
       this.glow("#39dcff", 18);
@@ -220,7 +222,7 @@ export class Renderer {
       c.stroke();
       c.shadowBlur = 0;
     }
-    if (p.power || state === "switch") {
+    if ((p.power && p.id) || state === "switch") {
       this.glow(p.id ? "#ff3ada" : "#38bfff", 22);
       for (let i = 0; i < 5; i++) {
         c.strokeStyle = p.id ? "#fa58dc" : "#63eaff";
@@ -242,10 +244,6 @@ export class Renderer {
         scale = this.w < 1000 ? 0.8 : 1;
       const { width: sw, height: sh, anchor: A } = ANIMATION;
       this.glow(p.id ? "#38dbff" : "#4c74ff", p.power ? 14 : 3);
-      if (p.power && !p.id) {
-        c.globalAlpha *= 0.68;
-        c.globalCompositeOperation = "screen";
-      }
       const draw = (img, frame, row = 0) => {
         if (img)
           c.drawImage(
@@ -260,13 +258,35 @@ export class Renderer {
             sh * scale,
           );
       };
+      const drawGait = (row = 0) => {
+        if (f.gaitMix <= .001) { draw(compiled, f.gait, row); return; }
+        const buffer = this.poseBuffers[p.id], bc = buffer.getContext('2d');
+        bc.clearRect(0, 0, sw, sh);
+        bc.globalCompositeOperation = 'source-over';
+        bc.globalAlpha = 1 - f.gaitMix;
+        bc.drawImage(compiled, f.gait * sw, row * sh, sw, sh, 0, 0, sw, sh);
+        // Add weighted images in an isolated buffer to preserve opacity.
+        bc.globalCompositeOperation = 'lighter';
+        bc.globalAlpha = f.gaitMix;
+        bc.drawImage(compiled, f.nextGait * sw, row * sh, sw, sh, 0, 0, sw, sh);
+        bc.globalAlpha = 1;
+        bc.globalCompositeOperation = 'source-over';
+        c.drawImage(buffer, -A.x * scale, -A.y * scale, sw * scale, sh * scale);
+      };
       if (p.weapon) {
-        draw(compiled, f.gait, 1);
+        drawGait(1);
         draw(this.assets[p.id ? "indaSword" : "neonBow"], f.weapon);
       } else if (p.id && p.power) {
-        draw(compiled, f.gait, 1);
+        drawGait(1);
         draw(this.assets.indaShield, f.shield);
-      } else draw(compiled, f.gait);
+      } else if (!p.id && p.power && this.assets.neonDash) {
+        const age=Math.max(0,DASH.duration-p.power), frame=Math.min(DASH.frames-1,Math.floor(age/DASH.duration*DASH.frames));
+        // Ghosts stay behind the opaque actor; no random offset or camera jitter.
+        for(let i=3;i>0;i--){c.save();c.translate(-i*19*scale,0);c.globalAlpha*=.09*(4-i);c.globalCompositeOperation='screen';draw(this.assets.neonDash,Math.max(0,frame-i));c.restore();}
+        draw(this.assets.neonDash,frame);
+        c.save();c.globalCompositeOperation='screen';c.strokeStyle='#a4efff';c.lineWidth=1.5;this.glow('#4c8eff',16);
+        for(let j=0;j<3;j++){c.beginPath();for(let k=0;k<9;k++){const px=-80+k*17,py=-45-j*35+Math.sin(age*22+k*1.7+j)*6;if(!k)c.moveTo(px,py);else c.lineTo(px,py);}c.stroke();}c.restore();
+      } else drawGait();
       c.globalCompositeOperation = "source-over";
       c.shadowBlur = 0;
     }
@@ -330,7 +350,7 @@ export class Renderer {
     } else if (!compiled) {
       this.text("ASSET EN CHARGEMENT", 0, -60, 10, col);
     }
-    if (p.power) {
+    if (p.power && p.id) {
       c.strokeStyle = p.id ? "#ff61db" : "#61eaff";
       this.glow(c.strokeStyle, 25);
       c.lineWidth = 3;
@@ -365,20 +385,20 @@ export class Renderer {
         shield: "#46dfff",
         energy: "#bafa69",
       }[o.type];
-      const yy = -(o.y || 45) + Math.sin(g.time * 3 + o.x) * 5;
+      const yy=-(o.y||45)+ambientMotion(o,g.time).pickupBob;
       this.glow(col, 18);
       c.fillStyle = "#0e1830";
       c.strokeStyle = col;
       c.lineWidth = 2;
       c.beginPath();
-      c.arc(0, yy, 17, 0, Math.PI * 2);
+      c.arc(0, yy, 21, 0, Math.PI * 2);
       c.fill();
       c.stroke();
       this.text(
         { note: "♪", heart: "♥", shield: "◇", energy: "ϟ" }[o.type],
         0,
         yy + 8,
-        25,
+        29,
         col,
         "center",
       );
@@ -700,9 +720,9 @@ export class Renderer {
     }
     if (o.type === "target") {
       const img = this.assets[o.hit ? "ceilingSwitchOn" : "ceilingSwitch"];
-      const h = 91,
+      const h = CEILING_SWITCH.height,
         w = img ? (h * img.width) / img.height : 60;
-      const y = -270;
+      const y = -CEILING_SWITCH.top;
       this.glow(o.hit ? "#6cffaa" : "#50ddff", 15);
       if (img) c.drawImage(img, d.w / 2 - w / 2, y, w, h);
       c.shadowBlur = 0;
@@ -738,7 +758,7 @@ export class Renderer {
         c.drawImage(
           img,
           d.w / 2 - w / 2,
-          -DRONE.bodyY + Math.sin(g.time * 5) * 4,
+          -DRONE.bodyY + ambientMotion(o,g.time).droneBob,
           w,
           h,
         );
@@ -746,7 +766,7 @@ export class Renderer {
       }
       if (!o.hit) {
         const x = d.w / 2,
-          y = -DRONE.beamY + Math.sin(g.time * 5) * 4;
+          y = -DRONE.beamY + ambientMotion(o,g.time).droneBob;
         this.glow("#ff235c", 19);
         c.fillStyle = "#ff425c";
         c.beginPath();
@@ -773,13 +793,13 @@ export class Renderer {
       const img = this.assets[o.hit ? "armoredBroken" : "armoredDetailed"];
       if (img) {
         this.glow(o.hit ? "#ffbb64" : "#f54ac6", 9);
-        c.drawImage(img, -15, -112, 106, 112);
+        c.drawImage(img,-10,-d.h-6,d.w+20,d.h+6);
         c.shadowBlur = 0;
       }
       this.text(
         "E · BOUCLIER · BRISER",
         d.w / 2,
-        -126,
+        -d.h-20,
         11,
         "#ffb3e9",
         "center",
@@ -788,7 +808,7 @@ export class Renderer {
     if (o.type === "vine") {
       const img = this.assets.organic;
       if (img) {
-        if (!o.hit) c.drawImage(img, -18, -125, 108, 125);
+        if (!o.hit) c.drawImage(img,-16,-d.h-14,d.w+32,d.h+14);
         else {
           const k = Math.min(1, (g.time - o.deathAt) / 0.6);
           c.drawImage(
@@ -797,13 +817,13 @@ export class Renderer {
             img.height * 0.65,
             img.width,
             img.height * 0.35,
-            -18,
-            -44,
-            108,
-            44,
+            -16,
+            -(d.h+14)*.35,
+            d.w+32,
+            (d.h+14)*.35,
           );
           c.save();
-          c.translate(33, -45 + k * k * 85);
+          c.translate(d.w/2, -(d.h+14)*.35 + k*k*85);
           c.rotate(k * 0.8);
           c.drawImage(
             img,
@@ -811,15 +831,15 @@ export class Renderer {
             0,
             img.width,
             img.height * 0.65,
-            -54,
-            -81,
-            108,
-            81,
+            -(d.w+32)/2,
+            -(d.h+14)*.65,
+            d.w+32,
+            (d.h+14)*.65,
           );
           c.restore();
         }
       }
-      this.text("R · ÉPÉE · TRANCHER", d.w / 2, -140, 11, "#ffa2e0", "center");
+      this.text("R · ÉPÉE · TRANCHER", d.w / 2, -d.h-28, 11, "#ffa2e0", "center");
     }
     c.restore();
   }
@@ -838,8 +858,8 @@ export class Renderer {
       for (const id of sensor.links) {
         const door = g.objects.find((o) => o.id === id);
         if (!door) continue;
-        const sx = sensor.x + 24,
-          sy = this.floor(sensor.lane) - 270,
+        const sx = sensor.x + OBSTACLES.target.w/2,
+          sy = this.floor(sensor.lane) - CEILING_SWITCH.top,
           dx = door.x + OBSTACLES.door.w - 8,
           dy = this.floor(door.lane) - OBSTACLES.door.h + 8,
           ceiling = Math.min(sy - 16, dy - 22),
@@ -905,8 +925,8 @@ export class Renderer {
     const sw = img.width / 4,
       sh = img.height / 3;
     const giant = o.type === "giant",
-      dh = giant ? this.floor(1) - this.floor(0) + 165 : 145,
-      dw = giant ? dh : 145,
+      dh = giant ? this.floor(1) - this.floor(0) + 165 : 174,
+      dw = giant ? dh : 174,
       y = this.floor(giant ? 1 : o.lane);
     c.save();
     if (o.hit) c.globalAlpha = Math.max(0, o.deathLife / 0.6);

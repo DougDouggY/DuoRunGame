@@ -1,10 +1,11 @@
-import { CHARACTER_ASSETS } from "./config.js?v=4.2.0";
+import { CHARACTER_ASSETS } from "./config.js?v=4.3.0";
 export async function loadAssets() {
   const paths = {
-    neonRun: "assets/characters/v42/neon-run.png",
-    indaRun: "assets/characters/v42/inda-run.png",
+    neonRun: "assets/characters/v43/neon-run.png",
+    indaRun: "assets/characters/v43/inda-run.png",
+    neonDash: "assets/characters/v43/neon-dash.png",
     neonBow: "assets/characters/v42/neon-weapon.png",
-    indaSword: "assets/characters/v42/inda-weapon.png",
+    indaSword: "assets/characters/v43/inda-weapon.png",
     indaShield: "assets/characters/v42/inda-shield.png",
     arrow: "assets/obstacles/v42/5.png",
     armoredDetailed: "assets/obstacles/v42/2.png",

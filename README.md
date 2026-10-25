@@ -1,4 +1,4 @@
-# DUO RUSH — V4.2
+# DUO RUSH — V4.3
 
 Runner coopératif Canvas 2D, deux routes visibles, ville nocturne illustrée conservée de la V3. NÉON IV (femme, veste noire et longs cheveux, électricité bleue) commence en haut ; INDAFRENCH (cagoule blanche, t-shirt noir, cyan/glitch) commence en bas.
 
@@ -18,7 +18,7 @@ Avant la partie, choisir la vitesse puis **Entrer dans la ville**. L’IA InDaFr
 | Glissade          | Z                             | ↓                                     |
 | Pouvoir           | E : dash électrique           | → : coup de bouclier                  |
 | Arme              | R : arc automatique           | / : épée                              |
-| SWITCH            | Espace                        | Entrée                                |
+| SWITCH            | Espace                        | Espace (second appui local)            |
 | Pause / reprendre | Échap ou bouton               | Échap ou bouton                       |
 
 Les commandes restent attachées au personnage après un échange. Le bouton ↻ recommence. L’aide affiche les touches ; lancer une nouvelle partie depuis l’aide remet le niveau à zéro. La pause conserve les timers. Perdre le focus met la partie hôte/locale en pause.
@@ -74,7 +74,7 @@ npm run test:browser
 npm run test:network
 ```
 
-- **25 tests de logique, sprites et protocole** : vitesses, séquences, durée exacte de 5 s, demande expirée, double confirmation, pause, cooldown/retour sûr, quatre capacités, timing épée, mécanisme lié, bonus, KO/reset.
+- **29 tests de logique, sprites et protocole** : vitesses, séquences, durée exacte de 5 s, demande expirée, double confirmation, pause, cooldown/retour sûr, quatre capacités, timing épée, mécanisme lié, bonus, KO/reset.
 - Une simulation fait finir le niveau aux deux IA **aux cinq vitesses, sans dégât ni impact absorbé par un bouclier**, avec les collisions normales. Aucun HP modifié par l’IA, aucune invincibilité ni suppression d’obstacles. Chaque échange et sa durée sont contrôlés. Cela démontre la solvabilité du catalogue actuel, pas de tous les patterns imaginables ni la facilité humaine.
 - Chromium : touches réelles, ressources, projectiles, pause, SWITCH/retour, cinq niveaux IA, démo, paysage et portrait, erreurs console/HTTP.
 - Protocole réseau : quatre tests des paquets, actions de l’invité, snapshots et pause sur canaux de données simulés. Le test de connexion WebRTC réelle est **SKIP** : la politique Chromium gérée de ce cloud interdit l’UDP direct et ne produit aucun candidat ICE. La négociation complète, le canal réel et la connexion Internet/NAT restent non validés.
@@ -106,3 +106,16 @@ Dans le menu, **Voir les animations** ouvre un aperçu agrandi : choisir la cour
 Les sources et les PNG sont dans `assets/characters/v42/` et `assets/obstacles/v42/`. `src/animation.js` décrit les dimensions et les cadences ; `src/sprite-compiler-v42.js` enregistre les bustes à la taille et préserve les prises illustrées. Pour reproduire les atlas, serveur actif : `npm run sprites:build`, puis `npm run sprites:contacts`. Le jeu charge les PNG déjà construits. Les planches de contact montrent les mêmes images que le rendu du jeu ; elles permettent une revue visuelle des 50 poses d’armes.
 
 Captures V4.2 : `assets/screenshot-v42-inspector.png` montre l’aperçu réel avec ses commandes ; `assets/screenshot-v42-combat.png` est une scène disposée pour vérifier la prise des armes, le circuit de porte et le drone. Cette dernière n’est pas présentée comme un parcours humain du niveau.
+
+
+## V4.3 — stabilité et lisibilité
+
+- Notes, bonus et drones : oscillations calculées sur le temps actif et un identifiant stable, jamais sur leur position défilante. Changer la vitesse déplace le monde plus vite sans accélérer leur animation propre.
+- Course : retrait du rebond artificiel, cadence limitée à 14–22 poses/s, fondu court entre poses sans perte d’opacité. Recalage horizontal des dessins à la ceinture ; les dessins complets et les armes tenues se déplacent ensemble.
+- Dash : 12 nouvelles poses transparentes dédiées, préparation, silhouette électrique, traînée puis rematérialisation. Même durée de pouvoir (0,8 s), mêmes collisions et cooldown ; l’arc existant est conservé. Aperçu ralenti disponible dans « Voir les animations ».
+- Épée : une préparation, une frappe, un retour, au lieu des orientations alternant plusieurs fois ; alignement du buste corrigé. Fenêtre active conservée de 0,40 à 0,64 s.
+- Caisses, blindages, pics, pylônes, lasers, portes et monstres agrandis avec leurs dimensions de gameplay ; corps des drones et bonus plus visibles. Les cinq niveaux complets restent franchis sans dégâts par l’IA avec les vraies collisions.
+
+Validation V4.3 : 29 tests Node et suite Chromium (24 images chargées, six aperçus, commandes, pause, SWITCH, armes, cinq parcours complets et format portrait), sans erreur de console/HTTP. Les tests de régression couvrent explicitement l’indépendance des oscillations à la vitesse. Les raccords anatomiques de quelques poses de course et des anciens états saut/glissade restent perfectibles ; il n’est pas revendiqué une disparition absolue de toute imperfection.
+
+Captures V4.3 : `assets/screenshot-v4-landscape.png`, `screenshot-v4-switch.png` et `screenshot-v4-portrait.png` proviennent du niveau en cours dans Chromium. `screenshot-v43-inspector.png` montre l’inspecteur réel ; `screenshot-v43-combat.png` est une scène de contrôle disposée pour montrer le dash, la prise d’épée, la liaison porte/interrupteur et le drone agrandi.

@@ -21,7 +21,7 @@ try {
   await page.waitForFunction(() => window.duoRush);
   assert.equal(
     await page.evaluate(() => Object.keys(duoRush.renderer.assets).length),
-    23,
+    24,
   );
   assert.ok(!(await page.locator("body").innerText()).includes("SWONNI"));
   assert.ok(!(await page.title()).includes("NEON RUSH"));
@@ -32,6 +32,7 @@ try {
     ["neon-bow", 16],
     ["inda-sword", 18],
     ["inda-shield", 16],
+    ["neon-dash", 12],
   ]) {
     await page.selectOption("#preview-kind", kind);
     await page.evaluate(() => {
@@ -154,7 +155,7 @@ try {
   assert.deepEqual(await page.evaluate(() => duoRush.game.ai), [true, true]);
   assert.deepEqual(errors, []);
   console.log(
-    "Chromium PASS: 23 images, V4 keys, weapons/projectile, Space-only request/confirm, 5s return/pause, 5 full AI levels, demo, landscape/switch/portrait. No console or HTTP errors.",
+    "Chromium PASS: 24 images, V4 keys, weapons/projectile, Space-only request/confirm, 5s return/pause, 5 full AI levels, demo, landscape/switch/portrait. No console or HTTP errors.",
   );
 } finally {
   await browser.close();

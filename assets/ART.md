@@ -46,3 +46,10 @@ Les PNG `characters/v41/neon-compiled.png` et `inda-compiled.png` ont 10 colonne
 - `obstacles/v42/props-source.png` et les six extractions : drone/débris, barricade/débris, croissance organique à couper et véritable flèche électrifiée (fût carbone, pointe, empennage). Les conduits de porte, voyants et rayons restent des effets Canvas reliés aux positions réelles du niveau.
 
 Les cinq planches `*-contact.png` et l’aperçu ralenti du menu utilisent les images réellement rendues dans le jeu. Les images générées ne remplacent pas un travail final de raccord anatomique : variations de tissu, de posture et d’échelle peuvent subsister.
+
+
+## V4.3 — dash et enregistrement des poses
+
+`characters/v43/dash-source.png` est une nouvelle illustration générée en douze poses sur fond transparent, inspectée puis découpée dans `neon-dash.png` (12 × 384 × 240). Les petites composantes parasites des cellules adjacentes sont supprimées. La taille du personnage reste comparable à la course ; les éclairs/traînées sont des effets complémentaires au dessin.
+
+Les atlas `v43/neon-run.png`, `inda-run.png`, `inda-weapon.png` dérivent des ressources V4.2 par translations entières bornées à 28 pixels, sans étirement ; `frames.json` conserve les corrections. L’arc et le bouclier V4.2 restent inchangés. Le montage de l’épée suit désormais une seule frappe, décrit par `SWORD_SEQUENCE`. `npm run sprites:build` régénère les atlas V4.3 ; `npm run sprites:contacts` produit six planches depuis les ressources réellement chargées. Les compilateurs précédents restent disponibles. Les dessins générés gardent quelques variations anatomiques, malgré leur recalage.

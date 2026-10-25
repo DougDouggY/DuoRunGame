@@ -21,19 +21,19 @@ export const CONFIG = {
   segmentSeconds: 6.8,
 };
 export const OBSTACLES = {
-  crate: { w: 66, h: 68, action: "jump" },
-  spikes: { w: 48, h: 28, action: "jump" },
-  gap: { w: 58, h: 8, action: "jump" },
-  barrier: { w: 65, h: 124, action: "slide" },
-  laser: { w: 50, h: 132, action: "slide" },
-  electric: { w: 48, h: 120, owner: 0 },
-  armored: { w: 76, h: 102, owner: 1 },
-  drone: { w: 54, h: 90, weapon: 0 },
-  target: { w: 48, h: 66, mechanism: true },
-  door: { w: 74, h: 150, locked: true },
-  vine: { w: 70, h: 95, weapon: 1 },
-  plant: { w: 64, h: 105, weapon: 1 },
-  giant: { w: 100, h: 180, weapon: 1 },
+  crate: { w: 84, h: 88, action: "jump" },
+  spikes: { w: 70, h: 42, action: "jump" },
+  gap: { w: 82, h: 8, action: "jump" },
+  barrier: { w: 92, h: 140, action: "slide" },
+  laser: { w: 82, h: 148, action: "slide" },
+  electric: { w: 78, h: 152, owner: 0 },
+  armored: { w: 96, h: 132, owner: 1 },
+  drone: { w: 70, h: 110, weapon: 0 },
+  target: { w: 60, h: 80, mechanism: true },
+  door: { w: 98, h: 178, locked: true },
+  vine: { w: 92, h: 122, weapon: 1 },
+  plant: { w: 86, h: 128, weapon: 1 },
+  giant: { w: 124, h: 200, weapon: 1 },
 };
 export const SEQUENCES = [
   {
@@ -144,4 +144,7 @@ export const WEAPON = {
   muzzleHeight: 96,
 };
 
-export const DRONE = { bodyY: 290, aimY: 230, beamY: 185, width: 140 };
+export const DRONE = { bodyY: 290, aimY: 230, beamY: 185, width: 166 };
+
+export const CEILING_SWITCH={top:282,height:106,aimHeight:200};
+export const DASH={duration:.8,frames:12};

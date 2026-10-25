@@ -1,4 +1,4 @@
-# Publication DUO RUSH V4.2
+# Publication DUO RUSH V4.3
 
 GitHub Pages est activé sur le dépôt. Source vérifiée : branche `gh-pages`, racine `/`.
 
@@ -6,7 +6,7 @@ Adresse du jeu : https://dougdouggy.github.io/DuoRunGame/
 
 Le jeu est statique, avec `.nojekyll`. Aucun build, backend ni secret nécessaire. La coop à distance utilise une connexion WebRTC directe expérimentale, et non un serveur applicatif.
 
-Pour publier une évolution validée : envoyer le commit sur `gh-pages`, attendre le build Pages et vérifier que le titre distant est **DUO RUSH — V4.2**, que la métadonnée `version` vaut `4.2.0` et que les 23 images chargent dans un navigateur. Les URLs des modules et du CSS portent un suffixe de version pour éviter de reprendre les scripts V3 du cache.
+Pour publier une évolution validée : envoyer le commit sur `gh-pages`, attendre le build Pages et vérifier que le titre distant est **DUO RUSH — V4.3**, que la métadonnée `version` vaut `4.3.0` et que les 24 images chargent dans un navigateur. Les URLs des modules et du CSS portent un suffixe de version pour éviter de reprendre les scripts V3 du cache.
 
 Contrôles locaux avant publication : `npm test`, serveur `npm start`, puis `npm run test:browser`. `npm run test:network` rend explicitement SKIP quand Chromium ne propose aucune route ICE ; ce n’est pas une validation du multijoueur distant.
 

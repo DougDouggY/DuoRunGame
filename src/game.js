@@ -4,9 +4,10 @@ import {
   SEQUENCES,
   WEAPON,
   DRONE,
-} from "./config.js?v=4.2.0";
-import { buildLevel } from "./sequences.js?v=4.2.0";
-import { driveAI } from "./ai.js?v=4.2.0";
+  CEILING_SWITCH,
+} from "./config.js?v=4.3.0";
+import { buildLevel } from "./sequences.js?v=4.3.0";
+import { driveAI } from "./ai.js?v=4.3.0";
 const EPS = 1e-8;
 export class Game {
   constructor() {
@@ -369,7 +370,7 @@ export class Game {
       }
       const targetY =
         target.type === "target"
-          ? 240
+          ? CEILING_SWITCH.aimHeight
           : target.type === "drone"
             ? DRONE.aimY
             : 75;

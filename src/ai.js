@@ -1,4 +1,4 @@
-import { CONFIG, OBSTACLES, WEAPON } from "./config.js?v=4.2.0";
+import { CONFIG, OBSTACLES, WEAPON } from "./config.js?v=4.3.0";
 export function driveAI(g, id) {
   if (g.status !== "running") return;
   const p = g.players[id],

@@ -1,4 +1,5 @@
-import { WEAPON } from "./config.js?v=4.2.0";
+import {runCadence,frameBlend,swordFrame} from "./motion.js?v=4.3.0";
+import { WEAPON } from "./config.js?v=4.3.0";
 export const ANIMATION = {
   width: 384,
   height: 240,
@@ -9,12 +10,13 @@ export const ANIMATION = {
   legacyRun: [0, 1, 2, null, 3, 4, 5, 6, 7, null, 8, 9],
 };
 export function animationFrames(p, time, speed) {
-  const gait =
-    Math.floor(time * Math.min(72, (speed * ANIMATION.runFrames) / 160)) %
-    ANIMATION.runFrames;
+  const blended=frameBlend(time*runCadence(speed),ANIMATION.runFrames);
+  const gait=blended.current;
   return {
     gait,
-    weapon: Math.min(
+    nextGait:blended.next,
+    gaitMix:blended.mix,
+    weapon: p.id===1?swordFrame(p.weaponAge,WEAPON.duration):Math.min(
       ANIMATION.weaponFrames[p.id] - 1,
       Math.max(
         0,
