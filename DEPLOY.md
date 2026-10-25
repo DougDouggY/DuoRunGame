@@ -1,18 +1,13 @@
-# Mise en ligne GitHub Pages
+# Publication DUO RUSH V4
 
-Le jeu est statique : aucun build, secret, backend ou API nécessaire au navigateur.
+GitHub Pages est activé sur le dépôt. Source vérifiée : branche `gh-pages`, racine `/`.
 
-La branche `gh-pages` contient la version publiable à la racine, avec `.nojekyll`.
+Adresse du jeu : https://dougdouggy.github.io/DuoRunGame/
 
-Si Pages n'est pas encore activé :
+Le jeu est statique, avec `.nojekyll`. Aucun build, backend ni secret nécessaire. La coop à distance utilise une connexion WebRTC directe expérimentale, et non un serveur applicatif.
 
-1. Ouvrir https://github.com/DougDouggY/DuoRunGame/settings/pages
-2. Dans Build and deployment, choisir **Deploy from a branch**.
-3. Choisir **gh-pages** et **/ (root)**, puis **Save**.
-4. Attendre la fin de la publication GitHub Pages.
+Pour publier une évolution validée : envoyer le commit sur `gh-pages`, attendre le build Pages et vérifier que le titre distant est **DUO RUSH — V4**, que la métadonnée `version` vaut `4.0.0` et que les neuf images chargent dans un navigateur. Les URLs des modules et du CSS portent un suffixe de version pour éviter de reprendre les scripts V3 du cache.
 
-Adresse attendue, à vérifier après activation : https://dougdouggy.github.io/DuoRunGame/
+Contrôles locaux avant publication : `npm test`, serveur `npm start`, puis `npm run test:browser`. `npm run test:network` rend explicitement SKIP quand Chromium ne propose aucune route ICE ; ce n’est pas une validation du multijoueur distant.
 
-Ne pas annoncer cette URL comme opérationnelle avant une réponse HTTP 200 et un test navigateur du jeu distant.
-
-Au moment de la préparation, les requêtes HTTPS vers `api.github.com` étaient refusées par le proxy réseau avant authentification (CONNECT 403). L'accès Git HTTPS et l'envoi de la branche ont été vérifiés séparément. Ce refus ne prouve pas l'absence de droits sur le dépôt. Les domaines `api.github.com` et `dougdouggy.github.io` ont été ajoutés au brouillon de configuration ; l'enregistrement du brouillon ne modifie pas à lui seul le réseau de l'instance.
+Les domaines `api.github.com` et `dougdouggy.github.io` sont désormais accessibles depuis l’environnement pour vérifier le déploiement. La publication du jeu sur GitHub Pages est distincte de la publication du snapshot de développement cloud.

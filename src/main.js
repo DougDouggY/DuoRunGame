@@ -1,13 +1,26 @@
-import { Game } from "./game.js";
-import { Renderer } from "./render.js";
-import { loadAssets } from "./assets.js";
+import { PeerSession } from "./network.js?v=4.0.0";
+import { Game } from "./game.js?v=4.0.0";
+import { Renderer } from "./render.js?v=4.0.0";
+import { loadAssets } from "./assets.js?v=4.0.0";
 const canvas = document.querySelector("canvas"),
   overlay = document.querySelector("#overlay");
 const game = new Game();
 const renderer = new Renderer(canvas, await loadAssets());
 renderer.resize();
 addEventListener("resize", () => renderer.resize());
-window.neonRush = { game, renderer };
+const network = new PeerSession(game, (status) => {
+  document.querySelector("#network-status").textContent = status;
+  document.querySelector(".live").textContent = network.connected
+    ? "● DUO CONNECTÉ · " + (network.role === "host" ? "NÉON IV" : "INDAFRENCH")
+    : "● COOP LOCALE";
+  document.querySelector("#ai1").disabled = network.connected;
+  document.querySelector("#demo").disabled = network.connected;
+  if (network.connected) {
+    document.querySelector("#ai1").checked = false;
+  }
+});
+window.duoRush = { game, renderer, network };
+window.neonRush = window.duoRush; // Existing developer tooling compatibility.
 let muted = true,
   audio = new Audio(),
   context;
@@ -28,6 +41,13 @@ function beep(event) {
       damage: 95,
       break: 220,
       request: 600,
+      return: 880,
+      arrow: 1100,
+      sword: 310,
+      slash: 170,
+      unshield: 1300,
+      cancel: 100,
+      arrowHit: 700,
     }[event] || 400;
   v.gain.setValueAtTime(
     0.09 * +document.querySelector("#volume").value,
@@ -38,18 +58,28 @@ function beep(event) {
   o.start();
   o.stop(context.currentTime + 0.16);
 }
-function start() {
-  overlay.querySelector("h1").innerHTML = "NEON <i>RUSH</i>";
+function start(demo = false) {
+  if (network.role === "guest") return;
+  overlay.querySelector("h1").innerHTML = "DUO <i>RUSH</i>";
   overlay.querySelector(".eyebrow").textContent =
     "DEUX DESTINS. UNE MÊME FRÉQUENCE.";
   game.reset();
-  game.speed = +document.querySelector("#speed").value;
+  game.speed = +document.querySelector("#pre-speed").value;
+  game.ai = network.connected
+    ? [false, false]
+    : [demo, demo || document.querySelector("#ai1").checked];
+  document.querySelector("#speed").disabled = true;
+  document.querySelector("#pre-speed").disabled = false;
   game.status = "running";
   overlay.classList.add("hidden");
   document.querySelector("#pause").textContent = "Ⅱ PAUSE";
   if (!muted && audio.src) audio.play().catch(() => {});
 }
 function pause() {
+  if (network.role === "guest") {
+    network.send({ type: "pause" });
+    return;
+  }
   if (!["running", "paused"].includes(game.status)) return;
   game.status = game.status === "paused" ? "running" : "paused";
   document.querySelector("#pause").textContent =
@@ -58,28 +88,39 @@ function pause() {
   else if (!muted && audio.src) audio.play().catch(() => {});
 }
 const keys = {
-  z: [0, "jump"],
-  s: [0, "slide"],
-  a: [0, "power"],
-  e: [0, "switch"],
+  a: [0, "jump"],
+  z: [0, "slide"],
+  e: [0, "power"],
+  r: [0, "weapon"],
+  " ": [0, "switch"],
   ArrowUp: [1, "jump"],
   ArrowDown: [1, "slide"],
   ArrowRight: [1, "power"],
+  "/": [1, "weapon"],
   Enter: [1, "switch"],
 };
 addEventListener("keydown", (e) => {
-  if (keys[e.key] || [" ", "Escape"].includes(e.key)) e.preventDefault();
+  const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+  if (keys[key] || key === "Escape") e.preventDefault();
   if (e.repeat) return;
-  if (e.key === "Escape" || e.key === " ") {
+  if (key === "Escape") {
     pause();
     return;
   }
-  const action = keys[e.key] || keys[e.key.toLowerCase()];
-  if (action) game.action(...action);
+  const action = keys[key];
+  if (action) {
+    if (network.connected) {
+      if (action[0] === 0) network.action(action[1]);
+    } else if (!game.ai[action[0]]) game.action(...action);
+  }
 });
-document.querySelector("#play").onclick = start;
-document.querySelector("#reset").onclick = start;
+document.querySelector("#play").onclick = () => start(false);
+document.querySelector("#demo").onclick = () => start(true);
+document.querySelector("#reset").onclick = () => start(false);
 document.querySelector("#pause").onclick = pause;
+document.querySelector("#ai1").onchange = (e) => {
+  game.ai[1] = e.target.checked;
+};
 document.querySelector("#help").onclick = () => {
   if (game.status === "running") pause();
   overlay.classList.toggle("hidden");
@@ -106,18 +147,21 @@ document.querySelector("#audio").onchange = (e) => {
 };
 document.querySelector("#volume").oninput = (e) =>
   (audio.volume = +e.target.value);
+document.querySelector("#pre-speed").onchange = (e) => {
+  document.querySelector("#speed").value = e.target.value;
+};
 document.querySelector("#speed").onchange = (e) => {
-  game.speed = +e.target.value;
-  game.say(
-    "VITESSE FIXE · " + e.target.selectedOptions[0].textContent.toUpperCase(),
-  );
+  document.querySelector("#pre-speed").value = e.target.value;
 };
 addEventListener("blur", () => {
-  if (game.status === "running") pause();
+  if (game.status === "running" && network.role !== "guest") pause();
 });
 let last = performance.now();
 function frame(now) {
-  game.update((now - last) / 1000);
+  if (network.role !== "guest") game.update(Math.min((now - last) / 1000, 0.2));
+  network.tick(now);
+  if (network.role === "guest" && game.status === "running")
+    overlay.classList.add("hidden");
   last = now;
   for (const event of game.events.splice(0)) beep(event);
   renderer.draw(game);
@@ -133,3 +177,36 @@ function frame(now) {
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
+
+const panel = document.querySelector("#network-panel");
+document.querySelector("#online").onclick = () => {
+  if (game.status === "running") pause();
+  panel.showModal();
+};
+document.querySelector("#network-close").onclick = () => panel.close();
+async function connectUI(work) {
+  try {
+    document.querySelector("#network-status").textContent =
+      "Préparation de la connexion…";
+    const code = await work();
+    if (code) document.querySelector("#signal-out").value = code;
+    document.querySelector("#network-status").textContent = network.connected
+      ? "Connecté. L’hôte peut lancer la partie."
+      : "Code prêt : transmettez-le à l’autre joueur.";
+  } catch (error) {
+    document.querySelector("#network-status").textContent = error.message;
+  }
+}
+document.querySelector("#host").onclick = () =>
+  connectUI(() => network.offer());
+document.querySelector("#join").onclick = () =>
+  connectUI(() => network.answer(document.querySelector("#signal-in").value));
+document.querySelector("#connect").onclick = () =>
+  connectUI(() => network.accept(document.querySelector("#signal-in").value));
+document.querySelector("#disconnect").onclick = () => {
+  network.close();
+  document.querySelector("#signal-in").value = "";
+  document.querySelector("#signal-out").value = "";
+  document.querySelector("#network-status").textContent =
+    "Déconnecté. Coop locale disponible.";
+};

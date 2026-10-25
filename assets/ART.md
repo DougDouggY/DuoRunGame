@@ -20,3 +20,11 @@ La capture comparée au concept confirme la palette et les silhouettes, mais aus
 ## Deuxième référence reçue
 
 Le portrait individuel transmis ensuite dans le chat montre une femme encapuchonnée de dos/trois-quarts, longs cheveux noirs, veste ample noire marquée IV sur le bras, halo et éclairage bleu électrique au-dessus d'une ville nocturne. Cette référence remplace le rose comme couleur d'identité de Néon IV ; le rose reste présent dans le quartier et chez Swonni. Le poster complet n'est pas utilisé comme personnage ni comme fond de jeu. Le fichier original du chat n'étant pas monté comme fichier dans le dépôt, les poses adaptées sont des illustrations dérivées, pas des découpages prétendument extraits du fichier original.
+
+## Ressources V4 — DUO RUSH
+
+- `characters/run-v4.png` : atlas RGBA 6 colonnes, quatre rangées. 12 images de Néon IV et 11 images d’InDaFrench utilisées. La cellule index 21 représente à tort Néon IV et est expressément exclue de `RUN_SPRITES.frames[1]`. Les rangées sont décrites par leurs limites réelles, et non supposées parfaitement régulières. Les sprites V3 restent disponibles pour les autres états.
+- `monsters/maw.png` : atlas RGBA 4×3. Frames 0–1 : repos ; 2–4 : ouverture/fermeture d’attaque ; 5 : morsure ; 6–9 : destruction ; 10 : géant protégé ; 11 : géant déprotégé. Créature végétale sombre originale, crocs translucides et veines magenta/cyan. Le géant conserve les proportions de l’illustration et occupe les deux routes.
+- `obstacles/industrial.png` : atlas RGBA 4×2, caisse, blindage, pylônes électriques, barrière haute, pics, drone, cible/interrupteur, laser. Illustrations réelles complétées par des arcs/pulsations animés Canvas.
+
+Ces ressources ont été générées pour cette évolution, examinées visuellement et chargées dans Chromium. Les armes (arc, épée, bouclier), particules, éclairs et ondes sont des parties animées Canvas. Les limites de régularité du cycle de course et des poses intermédiaires sont documentées dans le README, sans revendiquer une production d’animation professionnelle.

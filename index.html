@@ -2,22 +2,24 @@
 <html lang="fr">
   <head>
     <meta charset="utf-8" />
+    <meta name="version" content="4.0.0" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <link
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2212%22 fill=%22%23060d20%22/%3E%3Cpath d=%22M12 50V14L50 50V14%22 fill=%22none%22 stroke=%22%23ff39cc%22 stroke-width=%227%22/%3E%3C/svg%3E"
     />
-    <title>NEON RUSH — V3 Classique</title>
-    <link rel="stylesheet" href="style.css" />
+    <title>DUO RUSH — V4</title>
+    <link rel="stylesheet" href="style.css?v=4.0.0" />
   </head>
   <body>
     <header>
       <a class="brand" href="./"
-        >NEON<span>RUSH</span><small>V3 / CLASSIQUE</small></a
+        >DUO<span>RUSH</span><small>V4 / TEMPORAL CO-OP</small></a
       >
       <div class="live">● LOCAL CO-OP <span>2 JOUEURS</span></div>
       <nav>
-        <button id="help">? TOUCHES</button><button id="sound">SON OFF</button
+        <button id="online">DUO À DISTANCE</button
+        ><button id="help">? TOUCHES</button><button id="sound">SON OFF</button
         ><button id="pause">Ⅱ PAUSE</button><button id="reset">↻</button>
       </nav>
     </header>
@@ -25,27 +27,45 @@
       <div class="stage">
         <canvas
           id="game"
-          aria-label="NEON RUSH jeu coopératif à deux parcours"
+          aria-label="DUO RUSH jeu coopératif à deux parcours"
         ></canvas>
         <div id="overlay">
           <div class="eyebrow">DEUX DESTINS. UNE MÊME FRÉQUENCE.</div>
-          <h1>NEON <i>RUSH</i></h1>
+          <h1>DUO <i>RUSH</i></h1>
           <p>Traversez la ville. Échangez vos routes. Restez ensemble.</p>
           <div class="cards">
             <article>
               <b>NÉON IV</b>
-              <p>Z saut · S glissade<br />A dash électrique · E switch</p>
+              <p>A saut · Z glissade<br />E dash · R arc · Espace SWITCH</p>
             </article>
             <article>
-              <b>SWONNI</b>
-              <p>↑ saut · ↓ glissade<br />→ frappe glitch · Entrée switch</p>
+              <b>INDAFRENCH</b>
+              <p>
+                ↑ saut · ↓ glissade<br />→ bouclier · / épée · Entrée SWITCH
+              </p>
             </article>
           </div>
           <p class="hint">
-            Mur bleu → Néon IV / Caisse blindée rose → Swonni<br />SWITCH : E +
-            Entrée à moins de 1,4 s. Trois cœurs chacun.
+            Mur bleu → Néon IV / Caisse blindée rose → InDaFrench<br />SWITCH :
+            Espace + Entrée sous 2 s · Retour automatique après 5 s.
           </p>
-          <button id="play" class="primary">ENTRER DANS LA VILLE →</button>
+          <div class="setup">
+            <label
+              >VITESSE
+              <select id="pre-speed">
+                <option value="100">Découverte · 100 px/s</option>
+                <option value="180">Lente · 180 px/s</option>
+                <option value="280">Moyenne · 280 px/s</option>
+                <option value="400">Rapide · 400 px/s</option>
+                <option value="560">Cauchemardesque · 560 px/s</option>
+              </select></label
+            ><label
+              ><input id="ai1" type="checkbox" checked /> INDAFRENCH : IA de
+              test</label
+            >
+          </div>
+          <button id="demo">DÉMO · DEUX IA</button
+          ><button id="play" class="primary">ENTRER DANS LA VILLE →</button>
           <p class="hint">
             Casque conseillé · Coop locale · Vitesse fixe Découverte
           </p>
@@ -58,11 +78,11 @@
         ><label
           >VITESSE
           <select id="speed">
-            <option value="135">Découverte</option>
-            <option value="165">Lente</option>
-            <option value="215">Moyenne</option>
-            <option value="280">Rapide</option>
-            <option value="360">Cauchemardesque</option>
+            <option value="100">Découverte</option>
+            <option value="180">Lente</option>
+            <option value="280">Moyenne</option>
+            <option value="400">Rapide</option>
+            <option value="560">Cauchemardesque</option>
           </select></label
         ><label class="import"
           >IMPORT AUDIO
@@ -80,8 +100,39 @@
     </main>
     <div class="bottom">
       <span>01 — NIGHT DISTRICT</span
-      ><span>SAUTEZ / GLISSEZ / SYNCHRONISEZ</span><span>BUILD 03.00</span>
+      ><span>SAUTEZ / GLISSEZ / SYNCHRONISEZ</span><span>BUILD 04.00</span>
     </div>
-    <script type="module" src="src/main.js"></script>
+    <dialog id="network-panel">
+      <h2>DUO À DISTANCE</h2>
+      <p>
+        L’hôte joue NÉON IV, l’invité joue INDAFRENCH.<br />Sur chaque
+        ordinateur : A / Z / E / R / Espace.
+      </p>
+      <p>
+        Échangez vos codes par votre messagerie. Connexion directe expérimentale
+        : certains réseaux bloquent la connexion sans relais.
+      </p>
+      <div class="network-actions">
+        <button id="host">1 · CRÉER UNE PARTIE</button
+        ><button id="join">2 · REJOINDRE AVEC LE CODE HÔTE</button>
+      </div>
+      <label
+        >CODE REÇU<textarea
+          id="signal-in"
+          placeholder="Coller le code reçu ici"
+        ></textarea></label
+      ><button id="connect">3 · HÔTE : UTILISER LA RÉPONSE</button
+      ><label
+        >CODE À ENVOYER<textarea id="signal-out" readonly></textarea>
+      </label>
+      <p id="network-status">
+        L’hôte envoie son code ; l’invité colle ce code, rejoint et renvoie sa
+        réponse. L’hôte colle la réponse et l’utilise. Ensuite, l’hôte lance la
+        partie.
+      </p>
+      <button id="network-close">FERMER</button
+      ><button id="disconnect">DÉCONNECTER</button>
+    </dialog>
+    <script type="module" src="src/main.js?v=4.0.0"></script>
   </body>
 </html>

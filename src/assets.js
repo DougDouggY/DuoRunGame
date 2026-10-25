@@ -1,6 +1,9 @@
-import { CHARACTER_ASSETS } from "./config.js";
+import { CHARACTER_ASSETS } from "./config.js?v=4.0.0";
 export async function loadAssets() {
   const paths = {
+    run: "assets/characters/run-v4.png",
+    maw: "assets/monsters/maw.png",
+    industrial: "assets/obstacles/industrial.png",
     city: "assets/backgrounds/city.png",
     ground: "assets/backgrounds/ground.png",
     actions: "assets/characters/actions.png",

@@ -5,67 +5,128 @@ const browser = await chromium.launch({
   headless: true,
   args: ["--no-sandbox"],
 });
-const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
-const errors = [];
-page.on("pageerror", (e) => errors.push(e.message));
-page.on("console", (m) => {
-  if (m.type() === "error") errors.push(m.text());
-});
-await page.goto("http://127.0.0.1:8080");
-await page.waitForFunction(() => window.neonRush);
-assert.equal(
-  await page.evaluate(() => Object.keys(neonRush.renderer.assets).length),
-  6,
-);
-await page.click("#play");
-await page.keyboard.press("z");
-await page.waitForTimeout(180);
-assert.ok(await page.evaluate(() => neonRush.game.players[0].y > 0));
-await page.keyboard.press("ArrowUp");
-await page.keyboard.press("e");
-await page.keyboard.press("Enter");
-assert.deepEqual(
-  await page.evaluate(() => neonRush.game.players.map((p) => p.lane)),
-  [1, 0],
-);
-await page.waitForFunction(() => neonRush.game.players.every(p => p.y === 0) && neonRush.game.switching === 0);
-await page.keyboard.press("s");
-await page.keyboard.press("ArrowDown");
-assert.ok(
-  await page.evaluate(() => neonRush.game.players.every((p) => p.slide > 0)),
-);
-await page.keyboard.press("a");
-await page.keyboard.press("ArrowRight");
-assert.ok(
-  await page.evaluate(() => neonRush.game.players.every((p) => p.power > 0)),
-);
-await page.click("#pause");
-assert.equal(await page.evaluate(() => neonRush.game.status), "paused");
-await page.click("#pause");
-await page.click("#reset");
-await page.evaluate(() => {
-  const g = neonRush.game;
-  g.time = 8;
-  g.distance = 427;
-  g.score = 126;
-  g.objects = [
-    { type: "crate", lane: 0, x: 680 },
-    { type: "barrier", lane: 0, x: 990 },
-    { type: "electric", lane: 1, x: 1100 },
-    { type: "spikes", lane: 1, x: 760 },
-    { type: "note", lane: 0, x: 520, y: 60 },
-    { type: "shield", lane: 1, x: 560, y: 50 },
-  ];
-});
-await page.screenshot({ path: "assets/screenshot-landscape.png" });
-await page.setViewportSize({ width: 430, height: 932 });
-await page.waitForTimeout(100);
-await page.screenshot({ path: "assets/screenshot-portrait.png" });
-assert.ok(
-  await page.evaluate(() => neonRush.renderer.floor(1) < neonRush.renderer.h),
-);
-assert.deepEqual(errors, []);
-console.log(
-  "Browser: assets, keyboard controls, switch, slide, powers, pause/reset, landscape + portrait: PASS. No console errors.",
-);
-await browser.close();
+try {
+  const page = await browser.newPage({
+    viewport: { width: 1440, height: 1000 },
+  });
+  const errors = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  page.on("console", (m) => {
+    if (m.type() === "error") errors.push(m.text());
+  });
+  page.on("response", (r) => {
+    if (r.status() >= 400) errors.push(`${r.status()} ${r.url()}`);
+  });
+  await page.goto("http://127.0.0.1:8080");
+  await page.waitForFunction(() => window.duoRush);
+  assert.equal(
+    await page.evaluate(() => Object.keys(duoRush.renderer.assets).length),
+    9,
+  );
+  assert.ok(!(await page.locator("body").innerText()).includes("SWONNI"));
+  assert.ok(!(await page.title()).includes("NEON RUSH"));
+  await page.uncheck("#ai1");
+  await page.selectOption("#pre-speed", "180");
+  await page.click("#play");
+  await page.evaluate(() => {
+    duoRush.game.schedule = [];
+    duoRush.game.objects = [];
+  });
+  assert.equal(await page.evaluate(() => duoRush.game.speed), 180);
+  await page.keyboard.press("a");
+  await page.waitForFunction(() => duoRush.game.players[0].y > 0);
+  await page.waitForFunction(() => duoRush.game.players[0].y === 0);
+  await page.keyboard.press("z");
+  assert.ok(await page.evaluate(() => duoRush.game.players[0].slide > 0));
+  await page.waitForFunction(() => duoRush.game.players[0].slide === 0);
+  await page.keyboard.press("e");
+  assert.ok(await page.evaluate(() => duoRush.game.players[0].power > 0));
+  await page.keyboard.press("Space");
+  assert.equal(
+    await page.evaluate(() => duoRush.game.switchState.phase),
+    "request",
+  );
+  await page.keyboard.press("Enter");
+  assert.deepEqual(
+    await page.evaluate(() => duoRush.game.players.map((p) => p.lane)),
+    [1, 0],
+  );
+  await page.click("#pause");
+  const time = await page.evaluate(() => duoRush.game.time);
+  await page.waitForTimeout(150);
+  assert.equal(await page.evaluate(() => duoRush.game.time), time);
+  await page.click("#pause");
+  await page.evaluate(() => duoRush.game.update(5.01));
+  assert.deepEqual(
+    await page.evaluate(() => duoRush.game.players.map((p) => p.lane)),
+    [0, 1],
+  );
+  await page.click("#reset");
+  await page.evaluate(() => {
+    const g = duoRush.game;
+    g.schedule = [];
+    g.objects = [{ id: 100, type: "drone", lane: 0, x: 650 }];
+  });
+  await page.keyboard.press("r");
+  assert.ok(await page.evaluate(() => duoRush.game.projectiles.length > 0));
+  await page.waitForFunction(() => duoRush.game.objects[0]?.hit);
+  await page.keyboard.press("/");
+  assert.ok(await page.evaluate(() => duoRush.game.players[1].weapon > 0));
+  // All four authored situations and real AI actions, sampled through full browser simulation.
+  for (const speed of [100, 180, 280, 400, 560]) {
+    const result = await page.evaluate((speed) => {
+      const g = duoRush.game;
+      g.reset();
+      g.speed = speed;
+      g.status = "running";
+      g.ai = [true, true];
+      g.update(224.01);
+      return {
+        status: g.status,
+        damage: g.stats.damage,
+        log: g.switchLog,
+        stats: g.stats,
+      };
+    }, speed);
+    assert.equal(result.status, "win");
+    assert.equal(result.damage, 0);
+    assert.equal(result.stats.impacts, 0);
+    assert.equal(result.log.length, 8);
+  }
+  await page.evaluate(() => {
+    const g = duoRush.game;
+    g.reset();
+    g.speed = 180;
+    g.ai = [true, true];
+    g.status = "running";
+    g.update(104.3);
+    document.querySelector("#overlay").classList.add("hidden");
+  });
+  await page.screenshot({ path: "assets/screenshot-v4-landscape.png" });
+  await page.evaluate(() => {
+    const g = duoRush.game;
+    g.reset();
+    g.speed = 180;
+    g.ai = [true, true];
+    g.status = "running";
+    g.update(89.95);
+    document.querySelector("#overlay").classList.add("hidden");
+  });
+  await page.screenshot({ path: "assets/screenshot-v4-switch.png" });
+  await page.setViewportSize({ width: 430, height: 932 });
+  await page.waitForTimeout(150);
+  await page.screenshot({ path: "assets/screenshot-v4-portrait.png" });
+  assert.ok(
+    await page.evaluate(() => duoRush.renderer.floor(1) < duoRush.renderer.h),
+  );
+  assert.equal(await page.evaluate(() => window.scrollY), 0);
+  await page.click("#help");
+  await page.click("#demo");
+  assert.deepEqual(await page.evaluate(() => duoRush.game.ai), [true, true]);
+  assert.deepEqual(errors, []);
+  console.log(
+    "Chromium PASS: 9 images, V4 keys, weapons/projectile, 2s request, 5s return/pause, 5 full AI levels, demo, landscape/switch/portrait. No console or HTTP errors.",
+  );
+} finally {
+  await browser.close();
+}

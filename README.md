@@ -1,71 +1,90 @@
-# NEON RUSH — V3 Classique
+# DUO RUSH — V4
 
-Jeu navigateur Canvas 2D, coop locale pour deux personnes. Aucun compte, serveur applicatif, API ou abonnement. Les deux parcours restent visibles. Niveau classique de 2 400 m, vitesse fixe **Découverte** par défaut, environ six minutes.
+Runner coopératif Canvas 2D, deux routes visibles, ville nocturne illustrée conservée de la V3. NÉON IV (femme, veste noire et longs cheveux, électricité bleue) commence en haut ; INDAFRENCH (cagoule blanche, t-shirt noir, cyan/glitch) commence en bas.
 
-## Jouer
-
-Depuis ce dossier :
+## Lancer et jouer
 
 ```sh
 npm start
 ```
 
-Le serveur HTTP statique écoute sur le port **8080**. Ouvrir ce port avec le navigateur local / l'outil d'accès de votre environnement, puis cliquer **Entrer dans la ville**. Python 3 suffit au lancement ; Node 20+ sert aux tests. Ne pas ouvrir directement le fichier HTML avec `file://` : les modules ES nécessitent HTTP.
+Serveur statique Python 3, port **8080**, aucun build ni backend. Le site fonctionne également sur GitHub Pages : voir [DEPLOY.md](DEPLOY.md). Les modules ES demandent HTTP/HTTPS, pas une ouverture directe `file://`.
 
-| Action           | NÉON IV (femme, capuche noire) | SWONNI (homme, cagoule blanche) |
-| ---------------- | ------------------------------ | ------------------------------- |
-| Saut             | Z                              | ↑                               |
-| Glissade         | S                              | ↓                               |
-| Pouvoir          | A                              | →                               |
-| Confirmer SWITCH | E                              | Entrée                          |
+Avant la partie, choisir la vitesse puis **Entrer dans la ville**. L’IA InDaFrench est activée par défaut ; décocher pour jouer à deux au clavier. **Démo · Deux IA** fait réellement jouer les deux personnages, avec toutes leurs collisions actives. Les bonus conservent leur fonctionnement.
 
-E et Entrée dans une fenêtre de **1,4 seconde** échangent les pistes. Les collisions sont protégées pendant la transition de 0,65 s. Les commandes suivent le personnage après l'échange. Chaque joueur dispose de trois cœurs et de 1,8 s d'invulnérabilité après un impact. Le KO de l'un termine la partie.
+| Action            | NÉON IV / touches principales | INDAFRENCH / clavier local secondaire |
+| ----------------- | ----------------------------- | ------------------------------------- |
+| Saut              | A                             | ↑                                     |
+| Glissade          | Z                             | ↓                                     |
+| Pouvoir           | E : dash électrique           | → : coup de bouclier                  |
+| Arme              | R : arc automatique           | / : épée                              |
+| SWITCH            | Espace                        | Entrée                                |
+| Pause / reprendre | Échap ou bouton               | Échap ou bouton                       |
 
-- **Néon IV** traverse les murs électriques bleus avec son dash spectral ; elle ne brise pas le blindage rose.
-- **Swonni** brise les caisses blindées roses avec sa frappe glitch ; il ne neutralise pas les murs bleus.
-- Activer au moment du passage, cooldown de quatre secondes. Pour les patterns inversés, SWITCH puis pouvoir.
-- Sauter caisses, pics et trous. Glisser sous les barrières et lasers. Les trous demandent un saut plus tardif que les caisses.
-- Notes : +25 points partagés ; obstacle spécial neutralisé : +100 ; cœur : soin ; bouclier : absorbe un impact ; énergie : réinitialise le cooldown.
-- Espace / Échap et bouton Pause ; bouton ↻ pour recommencer ; aide des touches.
-- Lente / Moyenne / Rapide / Cauchemardesque sont facultatives. Aucun changement automatique de vitesse. Les actions s'adaptent à la vitesse ; les patterns gardent leur temps de préparation.
+Les commandes restent attachées au personnage après un échange. Le bouton ↻ recommence. L’aide affiche les touches ; lancer une nouvelle partie depuis l’aide remet le niveau à zéro. La pause conserve les timers. Perdre le focus met la partie hôte/locale en pause.
 
-**Audio :** effets synthétiques originaux désactivés par défaut. Le bandeau « TEXT ME BACK — NÉON IV » est un intitulé visuel, pas une musique incluse. Import MP3/WAV facultatif, lecture par URL blob locale, volume, son on/off. Aucun fichier audio n'est envoyé au serveur.
+**Cinq vitesses fixes :** Découverte 100, Lente 180, Moyenne 280, Rapide 400, Cauchemardesque 560 px/s. Choix avant la partie, aucune accélération ni modification en cours de partie. Les foulées, la physique et les espacements s’adaptent. Deux cycles de huit séquences, **224 secondes actives** au total ; la distance dépend de la vitesse.
 
-## Vérification
+## SWITCH temporaire
+
+1. Espace / Entrée ouvre une demande **2 secondes** et le bandeau « SWITCH ! ». Un joueur ne peut pas confirmer deux fois sa propre demande.
+2. Confirmation de l’autre : routes échangées pendant **exactement 5 secondes de simulation active**, transition comprise. Compte à rebours visible, pause respectée, impossible de renouveler ou annuler.
+3. Retour simultané et automatique sur les routes d’origine. Transition de 0,35 s, protection de 0,45 s.
+4. Cooldown **3 secondes à compter du retour**. Une demande expirée impose également 3 secondes d’attente.
+
+L’IA confirme après **0,22 s**, pas immédiatement. Elle peut demander une coopération si un obstacle incompatible approche. Les séquences B/C prévoient un corridor de retour vide ; une demande hors rythme dont le retour pourrait être dangereux est refusée avec « RETOUR NON SÉCURISÉ ». Cette vérification couvre toute la fenêtre de confirmation. Aucun obstacle n’est supprimé pour autoriser un retour.
+
+## Capacités et coopération
+
+- **Néon IV, E :** dash spectral bleu, traînées, éclairs, silhouette lumineuse. Neutralise seulement les murs électriques pendant la durée visible du pouvoir. Cooldown 4 s.
+- **InDaFrench, E :** bouclier sorti devant lui, impact, onde et débris. Détruit seulement les barricades blindées compatibles. Cooldown 4 s.
+- **Néon IV, R :** arc électrique, sélection automatique de la cible valide la plus proche dans une portée de 600 px ; vrai projectile et collision sur la cible. Détruit drones, active interrupteurs et désactive la protection d’un géant. Un interrupteur pédagogique ouvre aussi un passage de l’autre route.
+- **InDaFrench, R :** épée à portée de 125 px, frappe active entre 0,06 et 0,30 s après l’action. Détruit les Mâchoires et les géants **déprotégés**. Un coup lancé trop tôt ou contre une protection échoue. Cooldown des armes 1,5 s.
+
+Trois cœurs, invulnérabilité après dégât, bouclier consommable, cœur, recharge et notes à score commun. Un KO termine la partie. Les pouvoirs ne remplacent pas les armes, et aucun personnage ne remplace l’autre.
+
+Les séquences déterministes de 14 secondes remplacent le hasard libre :
+
+- **A :** pédagogie saut/glissade, pouvoirs propres, arc/drone/interrupteur, puis épée/Mâchoire.
+- **B :** blindage haut et caisse basse : échange requis pour attribuer le bouclier au bon parcours.
+- **C :** blindage haut et mur électrique bas : double incompatibilité, SWITCH puis deux pouvoirs.
+- **D :** géant commun aux deux routes : flèche sur la protection puis épée. Les deux joueurs prennent des dégâts si la créature reste intacte.
+
+## Deux ordinateurs — connexion directe expérimentale
+
+Bouton **Duo à distance**. L’hôte est Néon IV, l’invité InDaFrench. Chacun utilise **A / Z / E / R / Espace** sur son ordinateur.
+
+1. Hôte : créer une partie, envoyer le code affiché à l’invité.
+2. Invité : coller ce code, cliquer rejoindre, envoyer son code de réponse à l’hôte.
+3. Hôte : coller la réponse et l’utiliser. Quand la connexion est établie, fermer le panneau et lancer la partie.
+
+WebRTC chiffré, connexion pair à pair, aucun serveur applicatif ou compte. L’hôte calcule les collisions et envoie l’état 20 fois/s ; l’invité transmet ses vraies actions. La pause est partagée, une déconnexion met la partie en pause. Les IA sont désactivées en connexion distante. Le service STUN public facilite la connexion directe ; **aucun relais TURN n’est fourni**, donc certains routeurs/réseaux empêchent la connexion. Aucun mode de réseau Internet universel n’est promis. Le test Chromium à deux pages est fourni, mais la connexion réelle est bloquée dans cet environnement : politique gérée `disable_non_proxied_udp`, aucun candidat ICE. Seul le protocole de messages est validé par des tests à canaux simulés. Un essai entre deux ordinateurs réels reste nécessaire.
+
+## Audio et capture
+
+Effets synthétiques originaux, son off par défaut, volume. Le bandeau « TEXT ME BACK — NÉON IV » n’inclut aucune musique protégée. Import MP3/WAV facultatif via URL blob locale ; aucun envoi serveur. Format portrait conservé pour la capture TikTok, avec les deux routes ; commandes clavier, pas de contrôles tactiles.
+
+## Vérification exécutée
 
 ```sh
 npm ci --ignore-scripts --cache /tmp/neon-npm
 npm test
-# Avec le serveur déjà lancé, Chromium disponible dans /usr/bin/chromium :
+# Serveur actif et /usr/bin/chromium installé :
 npm run test:browser
+npm run test:network
 ```
 
-12 tests de logique : actions, collisions, cooldown, SWITCH valide/expiré, protection, bonus, pause, reset, KO et fin. Le test de parcours intégral simule un duo synchronisé sur **les cinq vitesses**, sans dégâts, jusqu'à la fin : il démontre la possibilité des patterns, pas leur facilité pour un humain. Chromium contrôle les ressources, les touches, le saut, la glissade, les pouvoirs, le SWITCH, pause/reset et deux tailles. Aucun test ne remplace un playtest humain à deux.
+- **16 tests de logique et de protocole** : vitesses, séquences, durée exacte de 5 s, demande expirée, double confirmation, pause, cooldown/retour sûr, quatre capacités, timing épée, mécanisme lié, bonus, KO/reset.
+- Une simulation fait finir le niveau aux deux IA **aux cinq vitesses, sans dégât ni impact absorbé par un bouclier**, avec les collisions normales. Aucun HP modifié par l’IA, aucune invincibilité ni suppression d’obstacles. Chaque échange et sa durée sont contrôlés. Cela démontre la solvabilité du catalogue actuel, pas de tous les patterns imaginables ni la facilité humaine.
+- Chromium : touches réelles, ressources, projectiles, pause, SWITCH/retour, cinq niveaux IA, démo, paysage et portrait, erreurs console/HTTP.
+- Protocole réseau : quatre tests des paquets, actions de l’invité, snapshots et pause sur canaux de données simulés. Le test de connexion WebRTC réelle est **SKIP** : la politique Chromium gérée de ce cloud interdit l’UDP direct et ne produit aucun candidat ICE. La négociation complète, le canal réel et la connexion Internet/NAT restent non validés.
 
-Captures en cours de partie : `assets/screenshot-landscape.png` et `assets/screenshot-portrait.png`. La scène de la capture est arrangée pour montrer les différents éléments ; le défilement et les personnages restent actifs. Ce n'est pas une preuve d'un parcours humain de 427 m.
+Captures issues de la simulation réelle, sans arrangement des obstacles : `assets/screenshot-v4-landscape.png`, `assets/screenshot-v4-switch.png`, `assets/screenshot-v4-portrait.png`.
 
-## Structure et remplacement artistique
+## Architecture et direction artistique
 
-- `src/game.js` : simulation sans dépendance DOM ; états, collisions, coop, score.
-- `src/config.js` : dimensions, paramètres, patterns et mapping de sprites.
-- `src/render.js` : Canvas, parallaxe, pluie, HUD, poses et effets.
-- `src/assets.js` : chargement et vérification des images.
-- `src/main.js` : clavier, interface, audio local et boucle.
-- `assets/backgrounds/` : panorama illustré et sol séparés, défilant à des vitesses distinctes.
-- `assets/characters/actions.png` : véritable atlas RGBA dérivé, 5 colonnes × 4 lignes, dix poses par personnage. Modifier `SPRITES` pour enrichir les frames, sans modifier le gameplay.
+`src/game.js` conserve la simulation indépendante du DOM et ajoute les états V4. `config.js` expose vitesses, hitboxes, mapping et capacités. `sequences.js` crée/vérifie le catalogue, `ai.js` exécute les actions réelles, `network.js` porte la connexion directe. `render.js` conserve les couches de ville/sol/pluie existantes et ajoute atlas, monstres, armes et particules ; `main.js` gère interface/clavier/audio.
 
-## État artistique honnête
+Les illustrations de ville et les poses existantes sont conservées. Nouveaux atlas RGBA : course, obstacles industriels, Mâchoire. Voir [assets/ART.md](assets/ART.md). Les animations ne remplacent pas les silhouettes par des formes simples. Les armes et effets sont des tracés Canvas superposés aux personnages ; le monstre possède deux repos, trois attaques, morsure, quatre étapes de destruction et deux états de géant.
 
-La référence composite jointe au chat a été examinée. Les fichiers annoncés `assets/01_direction_artistique.png`, `02_neon_iv_reference.png` et `03_swonni_reference.png` **n'étaient pas présents dans le dépôt** au moment de l'implémentation. L'image jointe n'a donc pas été inventée sous ces noms. Deux ressources illustrées ont été générées à partir de son design visible, et leurs originaux sont conservés (`assets/generated-atlas.png`, `assets/characters/actions.png`). Voir `assets/ART.md`.
-
-Le rendu jouable comprend une ville nocturne illustrée, néons, pluie, reflets, deux plateformes, personnages humains détourés, HUD et effets. Le concept n'est jamais utilisé comme fond unique contenant les personnages et obstacles.
-
-Écarts : les obstacles sont encore dessinés en Canvas et moins détaillés que le concept ; les décors se répètent ; la course comporte seulement deux images très proches et manque de fluidité ; dégâts et KO partagent la dernière pose. Le détourage de l'atlas RGBA est exploitable, avec un halo cyan volontaire et quelques résidus sur les contours ; le premier détourage chromatique est conservé pour les portraits. Les silhouettes respectent les designs visibles, mais les deux références individuelles restent nécessaires pour contrôler exactement le visage, la cagoule et la veste. L'inscription « NÉON IV » n'est pas lisible sur le sprite actuel. Ce sont des assets de prototype illustré, pas une spritesheet professionnelle finalisée.
-
-À illustrer ensuite : cycle de course de 8–12 frames, dégâts et KO distincts, glissade plus basse, obstacles texturés, portraits dédiés et variantes de quartier. Le portrait conserve les deux pistes et les proportions des personnages ; il reste destiné à la capture avec clavier PC, sans commandes tactiles.
-
-## Mise à jour Néon IV et publication
-
-La référence individuelle de Néon IV a ensuite été reçue dans le chat : le jeu utilise maintenant `assets/characters/neon-actions.png`, dix poses dérivées avec veste ample, visage caché, cheveux longs et aura bleu électrique. `SPRITES.neonGrid` décrit les cadres et exclut les séparations résiduelles de l’image générée. Le portrait a été remplacé. La référence individuelle de Swonni reste attendue.
-
-Pour GitHub Pages, voir [DEPLOY.md](DEPLOY.md). La branche de publication est `gh-pages`. Une branche envoyée ne prouve pas que Pages a été activé.
+**Limites assumées :** 12 frames de course pour Néon IV, 11 pour InDaFrench (une frame générée erronée écartée). Les foulées sont plus variées mais le calage des pieds, la morphologie et le raccord de boucle restent perfectibles. Les poses intermédiaires saut/glissade/récupération sont encore peu nombreuses ; dégâts et KO réutilisent des ressources V3, sans mort complète spécifique à chaque cause. Arc/épée/bouclier sont animés par parties superposées, sans nouveaux cycles de bras illustrés complets. Les atlas générés peuvent garder de légers halos ; l’animation n’est pas un pack professionnel finalisé. Le réseau distant est expérimental sans relais. Un playtest humain prolongé à deux et un test sur deux connexions Internet restent à faire.
