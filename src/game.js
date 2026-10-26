@@ -1,4 +1,4 @@
-import {bowTiming, paceFactor, worldDistance} from "./pace.js?v=4.5.0";
+import {bowTiming, paceFactor, worldDistance} from "./pace.js?v=4.5.1";
 import {
   CONFIG,
   OBSTACLES,
@@ -6,9 +6,9 @@ import {
   WEAPON,
   DRONE,
   CEILING_SWITCH,
-} from "./config.js?v=4.5.0";
-import { buildLevel } from "./sequences.js?v=4.5.0";
-import { driveAI } from "./ai.js?v=4.5.0";
+} from "./config.js?v=4.5.1";
+import { buildLevel } from "./sequences.js?v=4.5.1";
+import { driveAI } from "./ai.js?v=4.5.1";
 const EPS = 1e-8;
 export class Game {
   constructor() {

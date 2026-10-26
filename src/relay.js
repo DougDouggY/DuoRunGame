@@ -1,4 +1,4 @@
-import { PeerSession, FIELDS } from './network.js?v=4.5.0';
+import { PeerSession, FIELDS } from './network.js?v=4.5.1';
 export function normalizeRelayURL(value) {
   let url; try { url=new URL(value); } catch { throw new Error('Renseignez l’adresse HTTPS du serveur de jeu.'); }
   const local=['localhost','127.0.0.1','[::1]'].includes(url.hostname);

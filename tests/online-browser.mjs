@@ -7,7 +7,9 @@ try {
  const errors=[];for(const p of [host,guest])p.on('pageerror',e=>errors.push(e.message));
  await host.goto('http://127.0.0.1:8080');await host.waitForFunction(()=>window.duoRush);
  await host.click('#online');await host.locator('#server-settings').evaluate(el=>el.open=true);
- await host.fill('#relay-url','http://127.0.0.1:8787');await host.fill('#room-key','local-duo-test');await host.click('#host');
+ await host.fill('#relay-url','http://127.0.0.1:8787');
+ await host.click('#host');assert.match(await host.locator('#network-status').innerText(),/ROOM_CREATION_KEY/);
+ await host.fill('#room-key','local-duo-test');await host.click('#host');
  await host.waitForFunction(()=>duoRush.network.sessionActive);
  assert.equal(await host.locator('#play').isDisabled(),true);
  const invitation=await host.locator('#room-out').inputValue();assert.match(invitation,/#room=/);assert.ok(!invitation.includes('local-duo-test'));

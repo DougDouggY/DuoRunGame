@@ -1,5 +1,5 @@
-import {ambientMotion} from "./motion.js?v=4.5.0";
-import { ANIMATION, animationFrames } from "./animation.js?v=4.5.0";
+import {ambientMotion} from "./motion.js?v=4.5.1";
+import { ANIMATION, animationFrames } from "./animation.js?v=4.5.1";
 import {
   CONFIG,
   CHARACTER_ASSETS,
@@ -11,7 +11,7 @@ import {
   DRONE,
   CEILING_SWITCH,
   DASH,
-} from "./config.js?v=4.5.0";
+} from "./config.js?v=4.5.1";
 export class Renderer {
   constructor(canvas, assets) {
     this.canvas = canvas;

@@ -1,5 +1,6 @@
 import {spawn} from 'node:child_process';
 import {writeFile} from 'node:fs/promises';
+import {fileURLToPath} from 'node:url';
 import {wranglerEnv} from './wrangler-env.mjs';
 const cli='node_modules/wrangler/bin/wrangler.js';
 function run(args,input) {
@@ -13,6 +14,7 @@ function run(args,input) {
     if(input!==undefined)child.stdin.end(input+'\n');
   });
 }
+async function deploy() {
 try {
   if(!process.env.ROOM_CREATION_KEY&&!process.stdin.isTTY)
     throw new Error('Renseignez ROOM_CREATION_KEY dans les paramètres sécurisés, ou exécutez ce script dans votre terminal pour saisir la clé privée. Ne la collez pas dans le chat.');
@@ -35,3 +37,12 @@ try {
   console.log('\nRelais vérifié : '+url);
   console.log('src/online-config.js est prêt. Publiez les fichiers du jeu après les tests, puis créez votre salle depuis DUO À DISTANCE.');
 } catch(error) {console.error(error.message);process.exitCode=1;}
+
+}
+// Native fetch needs this startup option behind an environment HTTPS proxy.
+// Keep TLS verification enabled and retain normal behavior without a proxy.
+if ((process.env.HTTPS_PROXY || process.env.https_proxy) && process.env.NODE_USE_ENV_PROXY !== '1' && process.allowedNodeEnvironmentFlags.has('--use-env-proxy')) {
+  const child=spawn(process.execPath,['--use-env-proxy',fileURLToPath(import.meta.url)],{stdio:'inherit',env:{...process.env,NODE_USE_ENV_PROXY:'1'}});
+  child.on('error',error=>{console.error(error.message);process.exitCode=1;});
+  child.on('exit',code=>process.exitCode=code??1);
+} else await deploy();

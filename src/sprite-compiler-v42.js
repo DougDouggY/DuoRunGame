@@ -1,4 +1,4 @@
-import { ANIMATION } from "./animation.js?v=4.5.0";
+import { ANIMATION } from "./animation.js?v=4.5.1";
 const load = async (path) => {
   const img = new Image();
   img.src = path;

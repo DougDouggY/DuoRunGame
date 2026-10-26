@@ -1,3 +1,2 @@
-// Set to the HTTPS workers.dev URL printed by npm run online:deploy.
-// No account token or private creation key belongs in this public file.
-export const ONLINE_URL = '';
+// Public relay address only. Never put API tokens or room keys in this file.
+export const ONLINE_URL = "https://duo-rush-relay.jeferson-patry-sin.workers.dev";

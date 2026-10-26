@@ -1,11 +1,11 @@
 # Activer les salles privées DUO RUSH
 
-Le code du relais et de la connexion par invitation est implémenté. Le déploiement sur votre compte Cloudflare nécessite votre authentification ; aucune adresse de serveur n’est inventée dans le jeu.
+Le relais est maintenant déployé sur https://duo-rush-relay.jeferson-patry-sin.workers.dev et son adresse est préremplie dans le jeu. Le service `/health` a été vérifié publiquement. Pour utiliser le serveur existant, commencez par la section suivante ; les instructions de déploiement plus bas servent à l’administration ou à une nouvelle installation.
 
 ## Ce que vous utiliserez avec Tony
 
 1. Dans le jeu, ouvrir **DUO À DISTANCE**.
-2. Hôte : dans **Configurer la connexion**, renseigner l’adresse HTTPS du relais (automatique après publication de `online-config.js`) et votre **clé de création privée**, puis **Créer une salle**.
+2. Hôte : saisir votre **clé privée** dans le champ visible au-dessus de **Créer une salle**, puis cliquer ce bouton. Cette phrase est celle choisie pour `ROOM_CREATION_KEY`, pas votre jeton API Cloudflare. L’adresse du relais est déjà configurée ; **Configurer la connexion** sert seulement à la changer.
 3. Copier le lien privé et l’envoyer à Tony. Le lien est une clé d’invitation : ne pas le publier.
 4. Tony ouvre le lien, clique **Rejoindre** ; il joue INDAFRENCH, l’hôte joue NÉON IV. Il n’a pas besoin de la clé de création.
 5. Fermer le panneau ; l’hôte lance la partie. Chacun utilise A / Z / E / R / Espace sur son ordinateur.

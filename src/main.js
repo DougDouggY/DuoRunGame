@@ -1,10 +1,10 @@
-import {GameAudio} from "./audio.js?v=4.5.0";
-import { AnimationPreview } from "./preview.js?v=4.5.0";
-import { RelaySession, parseInvitation } from "./relay.js?v=4.5.0";
-import { ONLINE_URL } from "./online-config.js?v=4.5.0";
-import { Game } from "./game.js?v=4.5.0";
-import { Renderer } from "./render.js?v=4.5.0";
-import { loadAssets } from "./assets.js?v=4.5.0";
+import {GameAudio} from "./audio.js?v=4.5.1";
+import { AnimationPreview } from "./preview.js?v=4.5.1";
+import { RelaySession, parseInvitation } from "./relay.js?v=4.5.1";
+import { ONLINE_URL } from "./online-config.js?v=4.5.1";
+import { Game } from "./game.js?v=4.5.1";
+import { Renderer } from "./render.js?v=4.5.1";
+import { loadAssets } from "./assets.js?v=4.5.1";
 const canvas = document.querySelector("canvas"),
   overlay = document.querySelector("#overlay");
 const game = new Game();
@@ -195,7 +195,7 @@ try {
   const invitation=new URLSearchParams(location.hash.slice(1));
   if(invitation.has('room')) {
     const room=parseInvitation(location.href,serverInput.value);
-    serverInput.value=room.server;document.querySelector('#room-in').value=room.code;document.querySelector('#server-settings').open=false;
+    serverInput.value=room.server;document.querySelector('#room-in').value=room.code;document.querySelector('#server-settings').open=false;document.querySelector('#create-room').hidden=true;
     panel.showModal();document.querySelector('#network-status').textContent='Invitation reçue · cliquez sur Rejoindre pour jouer INDAFRENCH.';
   }
 } catch(error) {document.querySelector('#network-status').textContent=error.message;}
@@ -213,7 +213,11 @@ async function connectUI(work) {
   } catch(error) {document.querySelector('#network-status').textContent=error.message;}
   finally {buttons.forEach(b=>b.disabled=false);}
 }
-document.querySelector('#host').onclick=()=>connectUI(()=>network.create(serverInput.value,document.querySelector('#room-key').value));
+document.querySelector('#host').onclick=()=>{
+  const key=document.querySelector('#room-key');
+  if(!key.value){key.focus();document.querySelector('#network-status').textContent='Saisissez votre phrase privée ROOM_CREATION_KEY dans le champ ci-dessus, puis cliquez sur Créer une salle.';return;}
+  return connectUI(()=>network.create(serverInput.value,key.value));
+};
 document.querySelector('#join').onclick=()=>connectUI(()=>network.join(document.querySelector('#room-in').value,serverInput.value));
 document.querySelector('#reconnect').onclick=()=>connectUI(()=>network.reconnect());
 document.querySelector('#copy-room').onclick=async()=>{
@@ -222,7 +226,7 @@ document.querySelector('#copy-room').onclick=async()=>{
   catch {field.focus();field.select();document.querySelector('#network-status').textContent='Sélectionnez et copiez le lien affiché.';}
 };
 document.querySelector('#disconnect').onclick=()=>{
-  network.close();document.querySelector('#room-out').value='';document.querySelector('#room-code').textContent='';
+  network.close();document.querySelector('#create-room').hidden=false;document.querySelector('#room-out').value='';document.querySelector('#room-code').textContent='';
   document.querySelector('#network-status').textContent='Déconnecté. Coop locale disponible.';
   document.querySelector('#play').disabled=false;document.querySelector('#reset').disabled=false;document.querySelector('#pre-speed').disabled=false;
   document.querySelector('#ai1').disabled=false;document.querySelector('#demo').disabled=false;

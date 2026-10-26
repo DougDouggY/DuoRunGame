@@ -1,4 +1,4 @@
-# DUO RUSH — V4.5
+# DUO RUSH — V4.5.1
 
 Runner coopératif Canvas 2D, deux routes visibles, ville nocturne illustrée conservée de la V3. NÉON IV (femme, veste noire et longs cheveux, électricité bleue) commence en haut ; INDAFRENCH (cagoule blanche, t-shirt noir, cyan/glitch) commence en bas.
 
@@ -153,3 +153,12 @@ La comparaison entre tour par tour et coop temps réel ainsi qu’un exemple chi
 Les nouveaux scripts `online:dev`, `online:build`, `online:check`, `online:login`, `online:deploy` et `test:online` couvrent le développement, la vérification et le déploiement. Wrangler et Miniflare sont des dépendances de développement verrouillées ; ils ne sont pas envoyés au navigateur. Le site statique reste utilisable sans le serveur pour la coop locale et les IA.
 
 Les captures `assets/screenshot-v45-online-host.png` et `screenshot-v45-online-guest.png` montrent les deux navigateurs connectés au relais local, pas une connexion Internet prétendument déployée. Les autres illustrations et mécaniques de la V4.4.1 sont conservées. [cloudflare/README.md](cloudflare/README.md) décrit exactement les accès manquants pour activer le serveur public.
+
+
+## V4.5.1 — serveur activé et création de salle simplifiée
+
+Le relais public est déployé sur `https://duo-rush-relay.jeferson-patry-sin.workers.dev` ; son endpoint `/health` confirme le service et la présence de la clé de création. Le client utilise cette adresse par défaut.
+
+Pour créer : **Duo à distance → Votre clé privée → Créer une salle → Copier le lien**. La phrase est celle choisie pour `ROOM_CREATION_KEY`, jamais le jeton API Cloudflare. Le champ est visible directement, et une phrase manquante est expliquée avant tout appel réseau. Tony ouvre le lien et clique **Rejoindre**, sans saisir cette phrase. L’hôte ferme le panneau et lance la partie quand les deux sont connectés.
+
+La vérification HTTP publique confirme le déploiement ; les tests de jeu à deux navigateurs restent exécutés sur le moteur Cloudflare local. Une partie sur vos deux réseaux réels reste à effectuer. Le helper de déploiement prend en charge le proxy HTTPS de l’environnement avec Node 24, sans désactiver TLS.
