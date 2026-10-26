@@ -1,0 +1,64 @@
+import {chromium} from 'playwright';
+import assert from 'node:assert/strict';
+const launch=()=>chromium.launch({executablePath:'/usr/bin/chromium',headless:true,args:['--no-sandbox']});
+const browsers=await Promise.all([launch(),launch()]);
+try {
+ const [host,guest]=await Promise.all(browsers.map(b=>b.newPage({viewport:{width:1440,height:1000}})));
+ const errors=[];for(const p of [host,guest])p.on('pageerror',e=>errors.push(e.message));
+ await host.goto('http://127.0.0.1:8080');await host.waitForFunction(()=>window.duoRush);
+ await host.click('#online');await host.locator('#server-settings').evaluate(el=>el.open=true);
+ await host.fill('#relay-url','http://127.0.0.1:8787');await host.fill('#room-key','local-duo-test');await host.click('#host');
+ await host.waitForFunction(()=>duoRush.network.sessionActive);
+ assert.equal(await host.locator('#play').isDisabled(),true);
+ const invitation=await host.locator('#room-out').inputValue();assert.match(invitation,/#room=/);assert.ok(!invitation.includes('local-duo-test'));
+ await guest.goto(invitation);await guest.waitForFunction(()=>window.duoRush);
+ await guest.click('#join');
+ await Promise.all([host.waitForFunction(()=>duoRush.network.connected),guest.waitForFunction(()=>duoRush.network.connected)]);
+ assert.equal(await guest.evaluate(()=>duoRush.network.role),'guest');assert.equal(await guest.locator('#play').isDisabled(),true);
+ await host.click('#network-close');await guest.click('#network-close');await host.click('#play');
+ await guest.waitForFunction(()=>duoRush.game.status==='running');
+ // Isolate input tests from hazards, not from real socket or authority.
+ await host.evaluate(()=>{duoRush.game.schedule=[];duoRush.game.objects=[];});
+ await guest.keyboard.press('a');await host.waitForFunction(()=>duoRush.game.players[1].y>0);
+ assert.equal(await host.evaluate(()=>duoRush.game.players[0].y),0);
+ await guest.waitForFunction(()=>duoRush.game.players[1].y>0);
+ await host.keyboard.press('a');await host.waitForFunction(()=>duoRush.game.players[0].y>0);
+ await host.waitForFunction(()=>duoRush.game.players.every(p=>p.y===0));
+ await guest.keyboard.press('z');await host.waitForFunction(()=>duoRush.game.players[1].slide>0);
+ await guest.keyboard.press('e');await host.waitForFunction(()=>duoRush.game.players[1].power>0);
+ await guest.keyboard.press('r');await host.waitForFunction(()=>duoRush.game.players[1].weapon>0);
+ await host.keyboard.press('r');await guest.waitForFunction(()=>duoRush.game.stats.arrows>0);
+ await host.keyboard.press('Space');await guest.waitForFunction(()=>duoRush.game.switchState.phase==='request');
+ await guest.keyboard.press('Space');await host.waitForFunction(()=>duoRush.game.switchState.phase==='active');
+ const endsAt=await host.evaluate(()=>duoRush.game.switchState.endsAt);
+ await guest.click('#pause');await host.waitForFunction(()=>duoRush.game.status==='paused');await guest.waitForFunction(()=>duoRush.game.status==='paused');
+ const frozen=await host.evaluate(()=>duoRush.game.time);await host.waitForTimeout(140);assert.equal(await host.evaluate(()=>duoRush.game.time),frozen);
+ await guest.click('#pause');await host.waitForFunction(()=>duoRush.game.status==='running');
+ await host.evaluate(endsAt=>duoRush.game.update(endsAt-duoRush.game.time+.01),endsAt);
+ await guest.waitForFunction(()=>duoRush.game.switchLog.length===2);
+ assert.deepEqual(await guest.evaluate(()=>duoRush.game.players.map(p=>p.lane)),[0,1]);
+ const log=await host.evaluate(()=>duoRush.game.switchLog);assert.ok(Math.abs(log[1].time-log[0].time-5)<1e-8);
+ // No audio files, private owner keys or host credentials in authoritative snapshots.
+ assert.equal(await guest.evaluate(()=>!!duoRush.network.credentials),false);
+ assert.equal(await guest.evaluate(()=>duoRush.sound.media.src),'');
+ await guest.click('#online');await guest.click('#disconnect');
+ await host.waitForFunction(()=>!duoRush.network.connected&&duoRush.game.status==='paused');
+ assert.equal(await host.locator('#play').isDisabled(),true);
+ await guest.fill('#room-in',invitation);await guest.click('#join');
+ await Promise.all([host.waitForFunction(()=>duoRush.network.connected),guest.waitForFunction(()=>duoRush.network.connected)]);
+ assert.equal(await host.evaluate(()=>duoRush.game.status),'paused');
+ await guest.click('#network-close');
+ // An actual network screenshot, not a manually arranged solo combat fixture.
+ await host.click('#reset');await guest.waitForFunction(()=>duoRush.game.status==='running');
+ await host.waitForFunction(()=>duoRush.game.time>2);
+ await host.screenshot({path:'assets/screenshot-v45-online-host.png'});
+ await guest.screenshot({path:'assets/screenshot-v45-online-guest.png'});
+ await host.reload();await host.waitForFunction(()=>window.duoRush);
+ await guest.waitForFunction(()=>!duoRush.network.connected);
+ await host.click('#online');await host.click('#reconnect');
+ await Promise.all([host.waitForFunction(()=>duoRush.network.connected),guest.waitForFunction(()=>duoRush.network.connected)]);
+ assert.equal(await host.evaluate(()=>duoRush.network.code),new URLSearchParams(new URL(invitation).hash.slice(1)).get('room'));
+ assert.equal(await host.evaluate(()=>duoRush.game.status),'menu');
+ assert.deepEqual(errors,[]);
+ console.log('ONLINE Chromium PASS: two independent browsers, real WebSockets + Durable Object, private invitation, role ownership, both keyboard sets, jump/slide/E/R, shared pause, exact 5s SWITCH/return, disconnect pause, guest rejoin, host-role recovery after reload. No page errors.');
+} finally {await Promise.all(browsers.map(b=>b.close()));}

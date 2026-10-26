@@ -2,19 +2,19 @@
 <html lang="fr">
   <head>
     <meta charset="utf-8" />
-    <meta name="version" content="4.4.1" />
+    <meta name="version" content="4.5.0" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <link
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2212%22 fill=%22%23060d20%22/%3E%3Cpath d=%22M12 50V14L50 50V14%22 fill=%22none%22 stroke=%22%23ff39cc%22 stroke-width=%227%22/%3E%3C/svg%3E"
     />
-    <title>DUO RUSH — V4.4.1</title>
-    <link rel="stylesheet" href="style.css?v=4.4.1" />
+    <title>DUO RUSH — V4.5</title>
+    <link rel="stylesheet" href="style.css?v=4.5.0" />
   </head>
   <body>
     <header>
       <a class="brand" href="./"
-        >DUO<span>RUSH</span><small>V4.4.1 / CLASSIQUE</small></a
+        >DUO<span>RUSH</span><small>V4.5 / CLASSIQUE</small></a
       >
       <div class="live">● LOCAL CO-OP <span>2 JOUEURS</span></div>
       <nav>
@@ -108,38 +108,25 @@
     </section>
     <div class="bottom">
       <span>01 — NIGHT DISTRICT</span
-      ><span>SAUTEZ / GLISSEZ / SYNCHRONISEZ</span><span>BUILD 04.41</span>
+      ><span>SAUTEZ / GLISSEZ / SYNCHRONISEZ</span><span>BUILD 04.50</span>
     </div>
     <dialog id="network-panel">
-      <h2>DUO À DISTANCE</h2>
-      <p>
-        L’hôte joue NÉON IV, l’invité joue INDAFRENCH.<br />Sur chaque
-        ordinateur : A / Z / E / R / Espace.
-      </p>
-      <p>
-        Échangez vos codes par votre messagerie. Connexion directe expérimentale
-        : certains réseaux bloquent la connexion sans relais.
-      </p>
-      <div class="network-actions">
-        <button id="host">1 · CRÉER UNE PARTIE</button
-        ><button id="join">2 · REJOINDRE AVEC LE CODE HÔTE</button>
-      </div>
-      <label
-        >CODE REÇU<textarea
-          id="signal-in"
-          placeholder="Coller le code reçu ici"
-        ></textarea></label
-      ><button id="connect">3 · HÔTE : UTILISER LA RÉPONSE</button
-      ><label
-        >CODE À ENVOYER<textarea id="signal-out" readonly></textarea>
-      </label>
-      <p id="network-status">
-        L’hôte envoie son code ; l’invité colle ce code, rejoint et renvoie sa
-        réponse. L’hôte colle la réponse et l’utilise. Ensuite, l’hôte lance la
-        partie.
-      </p>
-      <button id="network-close">FERMER</button
-      ><button id="disconnect">DÉCONNECTER</button>
+      <h2>VOTRE SALLE PRIVÉE</h2>
+      <p>Vous créez : <b>NÉON IV</b>. Votre partenaire rejoint : <b>INDAFRENCH</b>.<br>Sur chaque ordinateur : A / Z / E / R / Espace.</p>
+      <details id="server-settings">
+        <summary>Configurer la connexion</summary>
+        <label>ADRESSE DU SERVEUR DE JEU<input id="relay-url" type="url" placeholder="https://duo-rush-relay.votre-compte.workers.dev" autocomplete="url"></label>
+        <label>CLÉ DE CRÉATION PRIVÉE · HÔTE UNIQUEMENT<input id="room-key" type="password" autocomplete="off" placeholder="La clé définie sur votre serveur"></label>
+        <p>Le partenaire a seulement besoin du lien d’invitation. Chaque musique reste sur son appareil.</p>
+      </details>
+      <div class="network-actions"><button id="host">CRÉER UNE SALLE</button><button id="reconnect">REPRENDRE MA SALLE</button></div>
+      <label>LIEN OU CODE REÇU<input id="room-in" type="text" autocomplete="off" placeholder="Coller le lien privé de votre partenaire"></label>
+      <div class="network-actions"><button id="join">REJOINDRE · INDAFRENCH</button></div>
+      <label>INVITATION PRIVÉE<textarea id="room-out" readonly></textarea></label>
+      <button id="copy-room">COPIER LE LIEN</button><small id="room-code"></small>
+      <p id="network-status" role="status">Créez une salle et envoyez le lien à votre partenaire. L’hôte lance la partie quand vous êtes deux.</p>
+      <p id="latency"></p>
+      <button id="network-close">FERMER</button><button id="disconnect">QUITTER LA SALLE</button>
     </dialog>
     <dialog id="animation-panel">
       <h2>LES PERSONNAGES EN MOUVEMENT</h2>
@@ -167,6 +154,6 @@
       <p>Le jeu reste en pause pendant l’observation.</p>
       <button id="preview-close">FERMER</button>
     </dialog>
-    <script type="module" src="src/main.js?v=4.4.1"></script>
+    <script type="module" src="src/main.js?v=4.5.0"></script>
   </body>
 </html>

@@ -1,4 +1,4 @@
-import {RhythmClock, PersonalNotes} from './rhythm.js?v=4.4.1';
+import {RhythmClock, PersonalNotes} from './rhythm.js?v=4.5.0';
 export class GameAudio {
   constructor() {
     this.media = new Audio(); this.media.loop = true;

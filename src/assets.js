@@ -1,4 +1,4 @@
-import { CHARACTER_ASSETS } from "./config.js?v=4.4.1";
+import { CHARACTER_ASSETS } from "./config.js?v=4.5.0";
 export async function loadAssets() {
   const paths = {
     neonRun: "assets/characters/v43/neon-run.png",

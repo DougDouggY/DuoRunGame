@@ -1,4 +1,4 @@
-import {bowTiming, paceFactor, worldDistance} from "./pace.js?v=4.4.1";
+import {bowTiming, paceFactor, worldDistance} from "./pace.js?v=4.5.0";
 import {
   CONFIG,
   OBSTACLES,
@@ -6,9 +6,9 @@ import {
   WEAPON,
   DRONE,
   CEILING_SWITCH,
-} from "./config.js?v=4.4.1";
-import { buildLevel } from "./sequences.js?v=4.4.1";
-import { driveAI } from "./ai.js?v=4.4.1";
+} from "./config.js?v=4.5.0";
+import { buildLevel } from "./sequences.js?v=4.5.0";
+import { driveAI } from "./ai.js?v=4.5.0";
 const EPS = 1e-8;
 export class Game {
   constructor() {
@@ -344,6 +344,7 @@ export class Game {
           this.objects.find((o) => o.id === p.weaponTarget && !o.hit) ||
           this.findBowTarget(p);
         this.projectiles.push({
+          id: this.stats.arrows + 1,
           x: CONFIG.playerX + WEAPON.muzzleX,
           lane: p.lane,
           fromLane: p.lane,

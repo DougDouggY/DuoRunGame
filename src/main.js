@@ -1,9 +1,10 @@
-import {GameAudio} from "./audio.js?v=4.4.1";
-import { AnimationPreview } from "./preview.js?v=4.4.1";
-import { PeerSession } from "./network.js?v=4.4.1";
-import { Game } from "./game.js?v=4.4.1";
-import { Renderer } from "./render.js?v=4.4.1";
-import { loadAssets } from "./assets.js?v=4.4.1";
+import {GameAudio} from "./audio.js?v=4.5.0";
+import { AnimationPreview } from "./preview.js?v=4.5.0";
+import { RelaySession, parseInvitation } from "./relay.js?v=4.5.0";
+import { ONLINE_URL } from "./online-config.js?v=4.5.0";
+import { Game } from "./game.js?v=4.5.0";
+import { Renderer } from "./render.js?v=4.5.0";
+import { loadAssets } from "./assets.js?v=4.5.0";
 const canvas = document.querySelector("canvas"),
   overlay = document.querySelector("#overlay");
 const game = new Game();
@@ -11,13 +12,19 @@ const renderer = new Renderer(canvas, await loadAssets());
 renderer.resize();
 const preview = new AnimationPreview(renderer.assets);
 addEventListener("resize", () => renderer.resize());
-const network = new PeerSession(game, (status) => {
+const network = new RelaySession(game, (status) => {
   document.querySelector("#network-status").textContent = status;
   document.querySelector(".live").textContent = network.connected
     ? "● DUO CONNECTÉ · " + (network.role === "host" ? "NÉON IV" : "INDAFRENCH")
-    : "● COOP LOCALE";
-  document.querySelector("#ai1").disabled = network.connected;
-  document.querySelector("#demo").disabled = network.connected;
+    : network.sessionActive ? "● SALLE PRIVÉE · ATTENTE" : "● COOP LOCALE";
+  document.querySelector("#ai1").disabled = network.sessionActive;
+  document.querySelector("#demo").disabled = network.sessionActive;
+  document.querySelector("#play").disabled = network.sessionActive && (!network.connected || network.role === "guest");
+  document.querySelector("#reset").disabled = network.role === "guest";
+  document.querySelector("#pre-speed").disabled = network.role === "guest";
+  document.querySelector("#play").textContent = network.sessionActive
+    ? network.role === "guest" ? "EN ATTENTE DE NÉON IV…" : network.connected ? "LANCER LA PARTIE À DEUX →" : "EN ATTENTE D’INDAFRENCH…"
+    : "ENTRER DANS LA VILLE →";
   if (network.connected) {
     document.querySelector("#ai1").checked = false;
   }
@@ -27,7 +34,7 @@ window.neonRush = window.duoRush; // Existing developer tooling compatibility.
 const sound = new GameAudio();
 window.duoRush.sound = sound;
 function start(demo = false) {
-  if (network.role === "guest") return;
+  if (network.role === "guest" || (network.sessionActive && !network.connected)) return;
   overlay.querySelector("h1").innerHTML = "DUO <i>RUSH</i>";
   overlay.querySelector(".eyebrow").textContent =
     "DEUX DESTINS. UNE MÊME FRÉQUENCE.";
@@ -45,6 +52,7 @@ function start(demo = false) {
   sound.sync(game.status);
 }
 function pause() {
+  if (network.sessionActive && !network.connected) return;
   if (network.role === "guest") {
     network.send({ type: "pause" });
     return;
@@ -81,6 +89,7 @@ addEventListener("keydown", (e) => {
     pause();
     return;
   }
+  if (network.sessionActive && !network.connected) return;
   if (key === " " && !network.connected) {
     const id =
       game.switchState.phase === "request"
@@ -139,8 +148,14 @@ let last = performance.now();
 function frame(now) {
   if (network.role !== "guest") game.update(Math.min((now - last) / 1000, 0.2));
   network.tick(now);
-  if (network.role === "guest" && game.status === "running")
-    overlay.classList.add("hidden");
+  if (network.role === "guest") {
+    if(game.status === "running") overlay.classList.add("hidden");
+    if(game.status === "menu") overlay.classList.remove("hidden");
+    const speed=String(game.baseSpeed ?? game.speed);
+    if(document.querySelector('#pre-speed').value!==speed) {
+      document.querySelector('#pre-speed').value=speed;document.querySelector('#speed').value=speed;
+    }
+  }
   last = now;
   const events=game.events.splice(0);
   network.queueSounds(events);
@@ -150,7 +165,9 @@ function frame(now) {
   sound.update(Math.min((now-(sound.lastFrame ?? now))/1000,.1),game.status,lane,localPlayer.y);
   sound.lastFrame=now;
   renderer.personalNotes=sound.personal;
-  renderer.draw(game);
+  renderer.online=network.connected;
+  renderer.draw(network.view(now));
+  document.querySelector("#latency").textContent = network.sessionActive ? (network.rtt === null ? "Liaison privée" : `Aller-retour : ${network.rtt} ms`) : "";
   preview.draw(now);
   if (["over", "win"].includes(game.status)) {
     overlay.classList.remove("hidden");
@@ -171,31 +188,44 @@ document.querySelector("#online").onclick = () => {
   panel.showModal();
 };
 document.querySelector("#network-close").onclick = () => panel.close();
-async function connectUI(work) {
-  try {
-    document.querySelector("#network-status").textContent =
-      "Préparation de la connexion…";
-    const code = await work();
-    if (code) document.querySelector("#signal-out").value = code;
-    document.querySelector("#network-status").textContent = network.connected
-      ? "Connecté. L’hôte peut lancer la partie."
-      : "Code prêt : transmettez-le à l’autre joueur.";
-  } catch (error) {
-    document.querySelector("#network-status").textContent = error.message;
+const serverInput=document.querySelector('#relay-url');
+serverInput.value=ONLINE_URL || localStorage.getItem('duoRush.server') || '';
+document.querySelector('#server-settings').open=!serverInput.value;
+try {
+  const invitation=new URLSearchParams(location.hash.slice(1));
+  if(invitation.has('room')) {
+    const room=parseInvitation(location.href,serverInput.value);
+    serverInput.value=room.server;document.querySelector('#room-in').value=room.code;document.querySelector('#server-settings').open=false;
+    panel.showModal();document.querySelector('#network-status').textContent='Invitation reçue · cliquez sur Rejoindre pour jouer INDAFRENCH.';
   }
+} catch(error) {document.querySelector('#network-status').textContent=error.message;}
+async function connectUI(work) {
+  const buttons=[...panel.querySelectorAll('.network-actions button')];
+  buttons.forEach(b=>b.disabled=true);
+  document.querySelector('#network-status').textContent='Connexion à votre salle…';
+  try {
+    await work();localStorage.setItem('duoRush.server',network.server);
+    document.querySelector('#room-out').value=network.invitation();
+    document.querySelector('#room-code').textContent=network.code;
+    document.querySelector('#network-status').textContent=network.connected
+      ? 'Vous êtes deux · fermez ce panneau. NÉON IV peut lancer la partie.'
+      : 'Salle ouverte · envoyez le lien privé à l’autre joueur.';
+  } catch(error) {document.querySelector('#network-status').textContent=error.message;}
+  finally {buttons.forEach(b=>b.disabled=false);}
 }
-document.querySelector("#host").onclick = () =>
-  connectUI(() => network.offer());
-document.querySelector("#join").onclick = () =>
-  connectUI(() => network.answer(document.querySelector("#signal-in").value));
-document.querySelector("#connect").onclick = () =>
-  connectUI(() => network.accept(document.querySelector("#signal-in").value));
-document.querySelector("#disconnect").onclick = () => {
-  network.close();
-  document.querySelector("#signal-in").value = "";
-  document.querySelector("#signal-out").value = "";
-  document.querySelector("#network-status").textContent =
-    "Déconnecté. Coop locale disponible.";
+document.querySelector('#host').onclick=()=>connectUI(()=>network.create(serverInput.value,document.querySelector('#room-key').value));
+document.querySelector('#join').onclick=()=>connectUI(()=>network.join(document.querySelector('#room-in').value,serverInput.value));
+document.querySelector('#reconnect').onclick=()=>connectUI(()=>network.reconnect());
+document.querySelector('#copy-room').onclick=async()=>{
+  const field=document.querySelector('#room-out');if(!field.value)return;
+  try {await navigator.clipboard.writeText(field.value);document.querySelector('#network-status').textContent='Lien copié · envoyez-le uniquement à votre partenaire.';}
+  catch {field.focus();field.select();document.querySelector('#network-status').textContent='Sélectionnez et copiez le lien affiché.';}
+};
+document.querySelector('#disconnect').onclick=()=>{
+  network.close();document.querySelector('#room-out').value='';document.querySelector('#room-code').textContent='';
+  document.querySelector('#network-status').textContent='Déconnecté. Coop locale disponible.';
+  document.querySelector('#play').disabled=false;document.querySelector('#reset').disabled=false;document.querySelector('#pre-speed').disabled=false;
+  document.querySelector('#ai1').disabled=false;document.querySelector('#demo').disabled=false;
 };
 
 document.querySelector("#inspect").onclick = () => {

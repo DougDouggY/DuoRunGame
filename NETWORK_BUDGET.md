@@ -1,6 +1,6 @@
 # DUO RUSH — budget réseau et option Cloudflare
 
-Le réseau actuel est WebRTC pair à pair, simulation sur l’ordinateur hôte. `PeerSession.tick()` plafonne les snapshots à 20/s ; l’invité envoie seulement ses actions. Il n’existe pas encore de backend Cloudflare dans le dépôt. Mettre les fichiers statiques sur Cloudflare Pages ne transforme pas ces paquets directs en messages Workers.
+Depuis V4.5, le relais Worker + Durable Object est **implémenté** et l’interface utilise des salles privées WebSocket. `RelaySession.tick()` plafonne les états à 20/s pendant le jeu ; l’invité envoie ses actions. La simulation reste sur l’ordinateur hôte. Le relais doit être déployé et configuré avant un usage Internet ; les tests locaux ne sont pas une mesure de quota réel. L’ancien WebRTC est conservé dans les sources, sans interface principale. Mettre les fichiers statiques sur Cloudflare Pages ne déploie pas automatiquement le relais. Voir `cloudflare/README.md`.
 
 ## Comparaison avec un jeu au tour par tour
 
@@ -26,7 +26,7 @@ Hypothèses d’une salle privée de deux personnes, sans stockage par frame, re
 
 | Architecture | Messages de jeu entrants dans le relais / heure | Requêtes de calcul DO équivalentes selon ratio 20:1 |
 | --- | ---: | ---: |
-| WebRTC direct actuel, Cloudflare sert seulement le site | 0 | 0 pour le jeu ; chargements du site/signalisation éventuelle séparés |
+| WebRTC direct (alternative historique), Cloudflare sert seulement le site | 0 | 0 pour le jeu ; chargements du site/signalisation éventuelle séparés |
 | Relais WebSocket : hôte 20/s, invité en moyenne 2 actions/s | 79 200 | environ 3 960, plus connexions et autres appels |
 | Relais : deux clients envoyant chacun 20/s | 144 000 | environ 7 200, plus connexions et autres appels |
 
@@ -38,9 +38,11 @@ La documentation officielle distingue :
 - **Durable Objects Free** : 100 000 requêtes/jour et 13 000 GB-s/jour. Le calcul de facturation applique 20 messages WebSocket entrants pour 1 requête. Les messages sortants ne sont pas facturés en requêtes ; les statistiques de messages continuent d’afficher les nombres réels.
 - Un DO restant actif utilise une allocation facturée de 128 Mo : une heure active représente environ **450 GB-s** (0,125 × 3 600). L’API WebSocket Hibernation peut éviter de compter les périodes réellement inactives ; ce n’est pas une raison de garantir qu’une simulation serveur avec timers hibernera.
 
-Un petit relais privé paraît donc compatible avec un usage modeste du gratuit, sous réserve des autres usages, limites de CPU/durée et de la configuration. Le choix recommandé à évaluer est soit un petit service de création de salle gardant le jeu en WebRTC direct, soit un DO WebSocket avec hibernation relayant les paquets de l’hôte sans recalculer ni enregistrer chaque frame. Aucune de ces options n’est présentée comme déjà déployée.
+Un petit relais privé paraît donc compatible avec un usage modeste du gratuit, sous réserve des autres usages, limites de CPU/durée et de la configuration. Le choix recommandé à évaluer est soit un petit service de création de salle gardant le jeu en WebRTC direct, soit un DO WebSocket avec hibernation relayant les paquets de l’hôte sans recalculer ni enregistrer chaque frame. Le relais WebSocket est désormais implémenté, sans prétendre qu’un déploiement public est déjà effectué.
 
 Mesure locale sur le catalogue V4.4 à vitesse Rapide avec deux IA : les snapshots JSON échantillonnés représentent environ **2,7 Ko en moyenne**, maximum observé environ **4,2 Ko**, avant compression/entêtes réseau. À 20/s constants, 2,7 Ko représente de l’ordre de **195 Mo/h** de données d’état sortant de l’hôte. Cette mesure du catalogue n’est pas une borne sur tous les futurs niveaux.
+
+En V4.5, les états ne sont pas renvoyés en boucle pendant une pause ; le ping natif avec réponse automatique laisse le Durable Object hiberner lors des périodes inactives. Les états sont relayés en mémoire, sans écriture en base par frame. Seules les métadonnées de salle et son expiration utilisent le stockage.
 
 Musique : chaque fichier est une URL blob locale, sans upload ni transfert à l’autre joueur. Les notes personnelles et leur analyse ne créent aucun trafic réseau. Les bruitages partagés sont des noms d’événements ajoutés aux snapshots déjà envoyés.
 

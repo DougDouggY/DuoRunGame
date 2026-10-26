@@ -1,5 +1,5 @@
-import { SWORD_SEQUENCE } from "./motion.js?v=4.4.1";
-import { ANIMATION } from "./animation.js?v=4.4.1";
+import { SWORD_SEQUENCE } from "./motion.js?v=4.5.0";
+import { ANIMATION } from "./animation.js?v=4.5.0";
 export class AnimationPreview {
   constructor(assets) {
     this.assets = assets;

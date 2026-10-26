@@ -1,7 +1,7 @@
 // Host-authoritative WebRTC. No game server, paid API or signalling service.
 // Users exchange offer/answer codes themselves. STUN helps direct connections;
 // restrictive NATs require a TURN relay that this project does not supply.
-const FIELDS = [
+export const FIELDS = [
   "players",
   "objects",
   "time",

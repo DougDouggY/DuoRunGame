@@ -1,4 +1,4 @@
-import { CONFIG, SEQUENCES, OBSTACLES } from "./config.js?v=4.4.1";
+import { CONFIG, SEQUENCES, OBSTACLES } from "./config.js?v=4.5.0";
 // Authored 6.8 s classic clusters; coop clusters reserve a safe return corridor
 // and append a classic exit pair. Actual encounter gaps are all <= 6.8 s.
 export function buildLevel(rounds = 2) {

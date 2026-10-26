@@ -1,4 +1,4 @@
-# DUO RUSH — V4.4.1
+# DUO RUSH — V4.5
 
 Runner coopératif Canvas 2D, deux routes visibles, ville nocturne illustrée conservée de la V3. NÉON IV (femme, veste noire et longs cheveux, électricité bleue) commence en haut ; INDAFRENCH (cagoule blanche, t-shirt noir, cyan/glitch) commence en bas.
 
@@ -50,15 +50,17 @@ Les séquences principales conservent leur rythme pédagogique ; **64 obstacles 
 - **C :** blindage haut et mur électrique bas : double incompatibilité, SWITCH puis deux pouvoirs.
 - **D :** géant commun aux deux routes : flèche sur la protection puis épée. Les deux joueurs prennent des dégâts si la créature reste intacte.
 
-## Deux ordinateurs — connexion directe expérimentale
+## Deux ordinateurs — salles privées WebSocket
 
-Bouton **Duo à distance**. L’hôte est Néon IV, l’invité InDaFrench. Chacun utilise **A / Z / E / R / Espace** sur son ordinateur.
+Bouton **Duo à distance** : créer une salle, copier son lien privé, le transmettre à l’autre joueur. L’hôte est NÉON IV ; l’invité rejoint et joue INDAFRENCH. Chacun utilise **A / Z / E / R / Espace** sur son ordinateur. L’hôte lance la partie lorsque les deux sont connectés. Il n’y a plus d’échange manuel d’offres/réponses WebRTC dans l’interface.
 
-1. Hôte : créer une partie, envoyer le code affiché à l’invité.
-2. Invité : coller ce code, cliquer rejoindre, envoyer son code de réponse à l’hôte.
-3. Hôte : coller la réponse et l’utiliser. Quand la connexion est établie, fermer le panneau et lancer la partie.
+Le relais **Cloudflare Worker + Durable Object** est implémenté dans `cloudflare/worker.js`. L’hôte calcule les collisions et envoie au maximum 20 états/s en jeu ; l’invité transmet ses actions. Rendu de l’invité interpolé (environ 80 ms), pause partagée, déconnexion suspendant la partie et reconnexion dans la même salle. Aucun snapshot répété en pause. La musique et les notes personnelles restent sur l’appareil de chaque joueur.
 
-WebRTC chiffré, connexion pair à pair, aucun serveur applicatif ou compte. L’hôte calcule les collisions et envoie l’état au maximum 20 fois/s ; l’invité transmet ses vraies actions. La pause est partagée, une déconnexion met la partie en pause. Les IA sont désactivées en connexion distante. Le service STUN public facilite la connexion directe ; **aucun relais TURN n’est fourni**, donc certains routeurs/réseaux empêchent la connexion. Aucun mode de réseau Internet universel n’est promis. Le test Chromium à deux pages est fourni, mais la connexion réelle est bloquée dans cet environnement : politique gérée `disable_non_proxied_udp`, aucun candidat ICE. Seul le protocole de messages est validé par des tests à canaux simulés. Un essai entre deux ordinateurs réels reste nécessaire.
+**Activation requise :** le serveur doit être déployé sur votre compte Cloudflare et son adresse placée dans `src/online-config.js` (ou saisie dans le panneau). Aucun point d’entrée public n’est inventé. Le code est testé avec le moteur Cloudflare local ; cela ne constitue pas une validation d’un déploiement Internet. Voir [le guide complet et les champs d’accès nécessaires](cloudflare/README.md). L’hôte utilise une clé de création privée ; l’invité n’en a pas besoin. Le jeton hôte distinct n’est jamais dans le lien partagé.
+
+Une salle est limitée à deux joueurs et expire après six heures. L’invité peut revenir avec le même lien. Le navigateur créateur peut reprendre son rôle hôte ; si l’hôte recharge sa page, la simulation n’est pas sauvegardée et une nouvelle partie doit être lancée. Le serveur n’est pas un arbitre anti-triche et ne fait aucune écriture en base par image.
+
+L’ancien moteur WebRTC demeure dans `network.js` pour compatibilité des outils et tests historiques ; il n’est plus proposé dans l’interface principale. Son test peut toujours être SKIP lorsque le cloud bloque l’UDP ; ce résultat ne concerne pas le nouveau relais WebSocket.
 
 ## Audio et capture
 
@@ -72,19 +74,23 @@ npm test
 # Serveur actif et /usr/bin/chromium installé :
 npm run test:browser
 npm run test:audio
-npm run test:network
+npm run online:dev
+# Puis dans un autre terminal, en conservant le jeu et le relais actifs :
+npm run test:online
+npm run online:build
 ```
 
-- **38 tests de logique, sprites, rythme et protocole** : vitesses, séquences, durée exacte de 5 s, demande expirée, double confirmation, pause, cooldown/retour sûr, quatre capacités, timing épée, mécanisme lié, bonus, KO/reset.
+- **46 tests de logique, sprites, rythme, protocole et relais** : vitesses, séquences, durée exacte de 5 s, demande expirée, double confirmation, pause, cooldown/retour sûr, quatre capacités, timing épée, mécanisme lié, bonus, KO/reset.
 - Une simulation fait finir le niveau aux deux IA **aux cinq vitesses, sans dégât ni impact absorbé par un bouclier**, avec les collisions normales. Aucun HP modifié par l’IA, aucune invincibilité ni suppression d’obstacles. Chaque échange et sa durée sont contrôlés. Cela démontre la solvabilité du catalogue actuel, pas de tous les patterns imaginables ni la facilité humaine.
 - Chromium : touches réelles, ressources, projectiles, pause, SWITCH/retour, cinq niveaux IA, démo, paysage et portrait, erreurs console/HTTP.
-- Protocole réseau : six tests des paquets, actions de l’invité, snapshots et pause sur canaux de données simulés. Le test de connexion WebRTC réelle est **SKIP** : la politique Chromium gérée de ce cloud interdit l’UDP direct et ne produit aucun candidat ICE. La négociation complète, le canal réel et la connexion Internet/NAT restent non validés.
+- Protocole historique : six tests sur canaux simulés. Relais : huit tests avec le moteur Cloudflare natif, incluant autorisations, deux sockets réelles, refus d’un troisième joueur, ping natif, isolation des salles, paquets interdits/oversize/flood, interpolation et expiration par alarme réelle.
+- Deux navigateurs Chromium indépendants : création et invitation privées, rôles et commandes, pause partagée, SWITCH et retour exactement à cinq secondes, déconnexion/reconnexion de l’invité, récupération du rôle hôte après rechargement. Ces tests utilisent de vraies connexions WebSocket vers le moteur Cloudflare local. L’essai entre vos deux ordinateurs via un relais public reste à effectuer après déploiement.
 
 Captures issues de la simulation réelle, sans arrangement des obstacles : `assets/screenshot-v4-landscape.png`, `assets/screenshot-v4-switch.png`, `assets/screenshot-v4-portrait.png`.
 
 ## Architecture et direction artistique
 
-`src/game.js` conserve la simulation indépendante du DOM et ajoute les états V4. `config.js` expose vitesses, hitboxes, mapping et capacités. `sequences.js` crée/vérifie le catalogue, `ai.js` exécute les actions réelles, `network.js` porte la connexion directe. `render.js` conserve les couches de ville/sol/pluie existantes et ajoute atlas, monstres, armes et particules ; `main.js` gère interface/clavier ; `audio.js` synthétise les effets et lit le fichier personnel, `rhythm.js` suit les mesures/kicks et notes locales, `pace.js` porte la progression et les timings de tir.
+`src/game.js` conserve la simulation indépendante du DOM et ajoute les états V4. `config.js` expose vitesses, hitboxes, mapping et capacités. `sequences.js` crée/vérifie le catalogue, `ai.js` exécute les actions réelles, `network.js` conserve la base de protocole et l’ancien WebRTC ; `relay.js` gère la salle WebSocket et l’interpolation, `cloudflare/worker.js` les salles et autorisations côté serveur. `render.js` conserve les couches de ville/sol/pluie existantes et ajoute atlas, monstres, armes et particules ; `main.js` gère interface/clavier ; `audio.js` synthétise les effets et lit le fichier personnel, `rhythm.js` suit les mesures/kicks et notes locales, `pace.js` porte la progression et les timings de tir.
 
 Les illustrations de ville et les poses existantes sont conservées. Nouveaux atlas RGBA : course, obstacles industriels, Mâchoire. Voir [assets/ART.md](assets/ART.md). Les animations ne remplacent pas les silhouettes par des formes simples. Les armes sont peintes dans leurs sprites avec la prise des mains, complétées par les effets Canvas ; le monstre possède deux repos, trois attaques, morsure, quatre étapes de destruction et deux états de géant.
 
@@ -140,3 +146,10 @@ Tests exécutés : **38 tests Node**, suite Chromium complète aux cinq vitesses
 La piste haute utilise désormais `assets/backgrounds/rooftops.png` : terrasses techniques, tours vitrées, passerelles, façades magenta et reflets de pluie. L’illustration a la même résolution et le même traitement que le quartier des canaux du bas, qui est conservé. Le décor reste défilant en parallaxe, derrière les obstacles et personnages ; il ne s’agit pas d’un écran concept collé au jeu. L’ancien fichier `city.png` reste disponible comme ressource historique. Aucun timing de gameplay, personnage ou arme n’a été modifié dans cette révision.
 
 La comparaison entre tour par tour et coop temps réel ainsi qu’un exemple chiffré de deux heures pour deux joueurs sont détaillés dans [NETWORK_BUDGET.md](NETWORK_BUDGET.md). Aucun backend Cloudflare n’est ajouté par ce changement visuel.
+
+
+## V4.5 — relais privé prêt à activer
+
+Les nouveaux scripts `online:dev`, `online:build`, `online:check`, `online:login`, `online:deploy` et `test:online` couvrent le développement, la vérification et le déploiement. Wrangler et Miniflare sont des dépendances de développement verrouillées ; ils ne sont pas envoyés au navigateur. Le site statique reste utilisable sans le serveur pour la coop locale et les IA.
+
+Les captures `assets/screenshot-v45-online-host.png` et `screenshot-v45-online-guest.png` montrent les deux navigateurs connectés au relais local, pas une connexion Internet prétendument déployée. Les autres illustrations et mécaniques de la V4.4.1 sont conservées. [cloudflare/README.md](cloudflare/README.md) décrit exactement les accès manquants pour activer le serveur public.

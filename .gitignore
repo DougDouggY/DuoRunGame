@@ -1,3 +1,10 @@
 node_modules/
 __pycache__/
 test-results/
+
+.wrangler/
+.dev.vars
+.dev.vars.*
+.env
+.env.*
+cloudflare/.dev.vars

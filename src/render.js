@@ -1,5 +1,5 @@
-import {ambientMotion} from "./motion.js?v=4.4.1";
-import { ANIMATION, animationFrames } from "./animation.js?v=4.4.1";
+import {ambientMotion} from "./motion.js?v=4.5.0";
+import { ANIMATION, animationFrames } from "./animation.js?v=4.5.0";
 import {
   CONFIG,
   CHARACTER_ASSETS,
@@ -11,7 +11,7 @@ import {
   DRONE,
   CEILING_SWITCH,
   DASH,
-} from "./config.js?v=4.4.1";
+} from "./config.js?v=4.5.0";
 export class Renderer {
   constructor(canvas, assets) {
     this.canvas = canvas;
@@ -650,7 +650,7 @@ export class Renderer {
       "center",
     );
     this.text(
-      `${SPEEDS.find((s) => s.value === (g.baseSpeed ?? g.speed))?.name.toUpperCase()} / ${Math.round(g.speed)} PX/S / ${g.ai.every(Boolean) ? "DÉMO IA" : g.ai[1] ? "IA INDAFRENCH" : "COOP LOCALE"}`,
+      `${SPEEDS.find((s) => s.value === (g.baseSpeed ?? g.speed))?.name.toUpperCase()} / ${Math.round(g.speed)} PX/S / ${this.online ? "COOP PRIVÉE" : g.ai.every(Boolean) ? "DÉMO IA" : g.ai[1] ? "IA INDAFRENCH" : "COOP LOCALE"}`,
       w - 20,
       32,
       10,

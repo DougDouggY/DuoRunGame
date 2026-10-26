@@ -1,6 +1,6 @@
 {
   "name": "duo-rush-v4",
-  "version": "4.4.1",
+  "version": "4.5.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,9 +10,18 @@
     "test:network": "node tests/network.mjs",
     "sprites:build": "node tools/build-sprites-v43.mjs",
     "sprites:contacts": "node tools/contact-sheets-v43.mjs",
-    "test:audio": "node tests/audio-browser.mjs"
+    "test:audio": "node tests/audio-browser.mjs",
+    "online:dev": "node tools/relay-dev.mjs",
+    "online:check": "node tools/run-wrangler.mjs whoami",
+    "online:build": "node tools/run-wrangler.mjs deploy --dry-run --config cloudflare/wrangler.jsonc --outdir /tmp/duo-relay-build",
+    "online:deploy": "node tools/deploy-relay.mjs",
+    "test:relay": "node --test tests/relay.test.js",
+    "test:online": "node tests/online-browser.mjs",
+    "online:login": "node tools/run-wrangler.mjs login"
   },
   "devDependencies": {
-    "playwright": "^1.56.0"
+    "miniflare": "4.20260730.0",
+    "playwright": "^1.56.0",
+    "wrangler": "4.152.0"
   }
 }

@@ -428,3 +428,12 @@ dialog button {
 .local-audio input { width:60px; background:#0b1428; border:1px solid #293c5c; color:#d8edff; border-radius:4px; padding:7px; }
 .local-audio select { max-width:225px; }
 .local-audio small { color:#7084a5; }
+
+#network-panel input { width:100%; background:#071224; border:1px solid #2d4567; border-radius:5px; color:#d7edff; padding:10px; margin:7px 0 12px; box-sizing:border-box; }
+#network-panel details { border:1px solid #263d5c; border-radius:6px; padding:12px; margin:12px 0; }
+#network-panel summary { cursor:pointer; color:#77ddff; margin-bottom:8px; }
+#room-out { min-height:62px; }
+#room-code { display:block; overflow-wrap:anywhere; margin:8px 0; color:#8fa1c0; }
+#latency { color:#63dfcb; font-size:12px; }
+
+button:disabled { opacity:.48; cursor:default; }
