@@ -1,5 +1,5 @@
-import {ambientMotion} from "./motion.js?v=4.3.0";
-import { ANIMATION, animationFrames } from "./animation.js?v=4.3.0";
+import {ambientMotion} from "./motion.js?v=4.4.0";
+import { ANIMATION, animationFrames } from "./animation.js?v=4.4.0";
 import {
   CONFIG,
   CHARACTER_ASSETS,
@@ -11,7 +11,7 @@ import {
   DRONE,
   CEILING_SWITCH,
   DASH,
-} from "./config.js?v=4.3.0";
+} from "./config.js?v=4.4.0";
 export class Renderer {
   constructor(canvas, assets) {
     this.canvas = canvas;
@@ -65,7 +65,7 @@ export class Renderer {
       c.beginPath();
       c.rect(0, top, w, floor - top);
       c.clip();
-      const img = this.assets.city;
+      const img = lane ? this.assets.canal : this.assets.city;
       if (img) {
         const ih = floor - top + 70,
           iw = (ih * img.width) / img.height;
@@ -92,7 +92,7 @@ export class Renderer {
       // Parallax near buildings and illuminated advertising.
       for (let i = 0; i < 8; i++) {
         const x =
-          ((((i * 293 - scroll * 0.42) % (w + 350)) + w + 350) % (w + 350)) -
+          ((((i * 293 + lane * 157 - scroll * (lane ? .36 : .42)) % (w + 350)) + w + 350) % (w + 350)) -
           120;
         if (i % 2 === 0) {
           c.fillStyle = "#070d20cc";
@@ -146,6 +146,12 @@ export class Renderer {
         c.shadowBlur = 0;
       }
       this.character(p, CONFIG.playerX, y, t, g.speed);
+    }
+    if(this.personalNotes) {
+      for(const n of this.personalNotes.notes) {
+        const x=CONFIG.playerX+(1-n.age/1.15)*880,y=this.floor(n.lane)-62-Math.sin(n.age*5)*7;
+        c.save();this.glow('#6dffe8',18);c.strokeStyle='#6dffe8';c.fillStyle='#071e2c';c.lineWidth=2;c.beginPath();c.arc(x,y,20,0,Math.PI*2);c.fill();c.stroke();this.text('♫',x,y+8,25,'#abfff2','center');c.restore();
+      }
     }
     this.combatFX(g);
     c.restore();
@@ -613,7 +619,7 @@ export class Renderer {
       c.fillStyle = "#26314a";
       c.fillRect(79, y + 80, 133, 3);
       c.fillStyle = "#f4b7ff";
-      c.fillRect(79, y + 80, 133 * (1 - p.weaponCD / CONFIG.weaponCooldown), 3);
+      c.fillRect(79, y + 80, 133 * (1 - p.weaponCD / (p.weaponCooldownTotal || CONFIG.weaponCooldown)), 3);
       this.text(
         `R · ${p.weaponCD ? p.weaponCD.toFixed(1) + "s" : p.id ? "ÉPÉE PRÊTE" : "ARC PRÊT"}`,
         210,
@@ -644,7 +650,7 @@ export class Renderer {
       "center",
     );
     this.text(
-      `${SPEEDS.find((s) => s.value === g.speed)?.name.toUpperCase()} / ${g.ai.every(Boolean) ? "DÉMO IA" : g.ai[1] ? "IA INDAFRENCH" : "COOP LOCALE"}`,
+      `${SPEEDS.find((s) => s.value === (g.baseSpeed ?? g.speed))?.name.toUpperCase()} / ${Math.round(g.speed)} PX/S / ${g.ai.every(Boolean) ? "DÉMO IA" : g.ai[1] ? "IA INDAFRENCH" : "COOP LOCALE"}`,
       w - 20,
       32,
       10,
@@ -652,6 +658,8 @@ export class Renderer {
       "right",
     );
     this.text("ESPACE · SWITCH  ⇄", w - 20, 55, 13, "#6addfa", "right");
+    if(this.personalNotes?.score || this.personalNotes?.notes.length)
+      this.text(`♫ PERSO ${this.personalNotes.score}`,w-20,76,11,"#8fffe6","right");
     c.restore();
   }
   newObstacle(o, g) {

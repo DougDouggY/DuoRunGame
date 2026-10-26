@@ -1,3 +1,4 @@
+import {bowTiming, paceFactor, worldDistance} from "./pace.js?v=4.4.0";
 import {
   CONFIG,
   OBSTACLES,
@@ -5,9 +6,9 @@ import {
   WEAPON,
   DRONE,
   CEILING_SWITCH,
-} from "./config.js?v=4.3.0";
-import { buildLevel } from "./sequences.js?v=4.3.0";
-import { driveAI } from "./ai.js?v=4.3.0";
+} from "./config.js?v=4.4.0";
+import { buildLevel } from "./sequences.js?v=4.4.0";
+import { driveAI } from "./ai.js?v=4.4.0";
 const EPS = 1e-8;
 export class Game {
   constructor() {
@@ -41,6 +42,7 @@ export class Game {
     this.distance = 0;
     this.score = 0;
     this.speed = CONFIG.speed;
+    this.baseSpeed = null;
     this.status = "menu";
     this.events = [];
     this.effects = [];
@@ -99,16 +101,20 @@ export class Game {
       p.power = 0.8;
       p.energy = CONFIG.cooldown;
       p.slide = 0;
-      this.emit("power", CONFIG.playerX, p.lane);
+      this.emit(id === 0 ? "electric" : "shieldHit", CONFIG.playerX, p.lane);
       return true;
     }
     if (key === "weapon" && p.weaponCD <= 0) {
       if (id === 0) p.weaponTarget = this.findBowTarget(p)?.id ?? null;
       else this.stats.swords++;
-      p.weapon = WEAPON.duration;
+      const timing = id === 0 ? bowTiming(this.speed) : WEAPON;
+      p.weaponDuration = timing.duration;
+      p.weaponRelease = timing.release;
+      p.weapon = timing.duration;
       p.weaponReleased = false;
       p.weaponAge = 0;
-      p.weaponCD = CONFIG.weaponCooldown;
+      p.weaponCD = id === 0 ? timing.cooldown : CONFIG.weaponCooldown;
+      p.weaponCooldownTotal = p.weaponCD;
       this.emit(id === 0 ? "draw" : "sword", CONFIG.playerX, p.lane);
       return true;
     }
@@ -232,6 +238,7 @@ export class Game {
     this.score += o.type === "giant" ? 500 : 100;
     this.stats.breaks++;
     this.emit(source, o.x, o.lane);
+    if (["plant", "vine", "giant"].includes(o.type)) this.events.push("monsterDeath");
   }
   hurt(p, o) {
     if (p.inv > 0 || this.switching) return;
@@ -272,8 +279,10 @@ export class Game {
     }
   }
   step(dt) {
+    this.baseSpeed ??= this.speed;
     this.time += dt;
-    this.scroll += this.speed * dt;
+    this.speed = this.baseSpeed * paceFactor(this.time);
+    this.scroll = worldDistance(this.time, this.baseSpeed);
     this.distance = this.scroll / 20;
     this.messageTime = Math.max(0, this.messageTime - dt);
     this.switching = Math.max(0, this.switching - dt);
@@ -296,7 +305,7 @@ export class Game {
           ...item,
           x:
             CONFIG.playerX +
-            (item.at - this.time) * this.speed +
+            (worldDistance(item.at, this.baseSpeed) - this.scroll) +
             (item.offsetX || 0),
           hit: false,
         });
@@ -306,7 +315,7 @@ export class Game {
     for (const o of this.objects) {
       if (o.at !== undefined)
         o.x =
-          CONFIG.playerX + (o.at - this.time) * this.speed + (o.offsetX || 0);
+          CONFIG.playerX + (worldDistance(o.at, this.baseSpeed) - this.scroll) + (o.offsetX || 0);
       else o.x -= this.speed * dt;
       if (o.deathLife) o.deathLife -= dt;
     }
@@ -326,7 +335,7 @@ export class Game {
       if (p.weapon) p.weaponAge += dt;
       if (
         p.id === 0 &&
-        p.weaponAge >= WEAPON.release &&
+        p.weaponAge + EPS >= (p.weaponRelease ?? bowTiming(this.speed).release) &&
         !p.weaponReleased &&
         p.weapon > 0
       ) {
@@ -362,7 +371,7 @@ export class Game {
     for (let id = 0; id < 2; id++) if (this.ai[id]) driveAI(this, id);
     for (const arrow of this.projectiles) {
       arrow.life -= dt;
-      arrow.x += WEAPON.arrowSpeed * dt;
+      arrow.x += bowTiming(this.speed).arrowSpeed * dt;
       const target = this.objects.find((o) => o.id === arrow.target && !o.hit);
       if (!target) {
         arrow.target = null;
@@ -448,7 +457,7 @@ export class Game {
           if (d.owner !== undefined) {
             safe = p.id === d.owner && p.power > 0;
             if (safe) {
-              this.destroy(o);
+              this.destroy(o, p.id === 0 ? "zap" : "break");
               break;
             }
           } else if (d.action === "jump") safe = p.y > d.h + 5;

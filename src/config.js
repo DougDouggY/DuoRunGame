@@ -1,9 +1,9 @@
 export const SPEEDS = [
   { value: 180, name: "Découverte" },
-  { value: 280, name: "Lente" },
-  { value: 400, name: "Moyenne" },
-  { value: 600, name: "Rapide" },
-  { value: 800, name: "Cauchemardesque" },
+  { value: 350, name: "Lente" },
+  { value: 600, name: "Moyenne" },
+  { value: 800, name: "Rapide" },
+  { value: 1000, name: "Cauchemardesque" },
 ];
 export const CONFIG = {
   speed: 180,

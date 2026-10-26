@@ -1,8 +1,9 @@
-import { AnimationPreview } from "./preview.js?v=4.3.0";
-import { PeerSession } from "./network.js?v=4.3.0";
-import { Game } from "./game.js?v=4.3.0";
-import { Renderer } from "./render.js?v=4.3.0";
-import { loadAssets } from "./assets.js?v=4.3.0";
+import {GameAudio} from "./audio.js?v=4.4.0";
+import { AnimationPreview } from "./preview.js?v=4.4.0";
+import { PeerSession } from "./network.js?v=4.4.0";
+import { Game } from "./game.js?v=4.4.0";
+import { Renderer } from "./render.js?v=4.4.0";
+import { loadAssets } from "./assets.js?v=4.4.0";
 const canvas = document.querySelector("canvas"),
   overlay = document.querySelector("#overlay");
 const game = new Game();
@@ -23,49 +24,15 @@ const network = new PeerSession(game, (status) => {
 });
 window.duoRush = { game, renderer, network, preview };
 window.neonRush = window.duoRush; // Existing developer tooling compatibility.
-let muted = true,
-  audio = new Audio(),
-  context;
-audio.volume = 0.4;
-function beep(event) {
-  if (muted) return;
-  context ??= new AudioContext();
-  if (context.state === "suspended") context.resume();
-  const o = context.createOscillator(),
-    v = context.createGain();
-  o.type = event === "damage" ? "sawtooth" : "sine";
-  o.frequency.value =
-    {
-      jump: 430,
-      power: 160,
-      switch: 740,
-      note: 940,
-      damage: 95,
-      break: 220,
-      request: 600,
-      return: 880,
-      arrow: 1100,
-      sword: 310,
-      slash: 170,
-      unshield: 1300,
-      cancel: 100,
-      arrowHit: 700,
-    }[event] || 400;
-  v.gain.setValueAtTime(
-    0.09 * +document.querySelector("#volume").value,
-    context.currentTime,
-  );
-  v.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.15);
-  o.connect(v).connect(context.destination);
-  o.start();
-  o.stop(context.currentTime + 0.16);
-}
+const sound = new GameAudio();
+window.duoRush.sound = sound;
 function start(demo = false) {
   if (network.role === "guest") return;
   overlay.querySelector("h1").innerHTML = "DUO <i>RUSH</i>";
   overlay.querySelector(".eyebrow").textContent =
     "DEUX DESTINS. UNE MÊME FRÉQUENCE.";
   game.reset();
+  sound.reset();
   game.speed = +document.querySelector("#pre-speed").value;
   game.ai = network.connected
     ? [false, false]
@@ -75,7 +42,7 @@ function start(demo = false) {
   game.status = "running";
   overlay.classList.add("hidden");
   document.querySelector("#pause").textContent = "Ⅱ PAUSE";
-  if (!muted && audio.src) audio.play().catch(() => {});
+  sound.sync(game.status);
 }
 function pause() {
   if (network.role === "guest") {
@@ -86,8 +53,7 @@ function pause() {
   game.status = game.status === "paused" ? "running" : "paused";
   document.querySelector("#pause").textContent =
     game.status === "paused" ? "▶ REPRENDRE" : "Ⅱ PAUSE";
-  if (game.status === "paused") audio.pause();
-  else if (!muted && audio.src) audio.play().catch(() => {});
+  sound.sync(game.status);
 }
 const keys = {
   a: [0, "jump"],
@@ -143,27 +109,23 @@ document.querySelector("#help").onclick = () => {
   overlay.classList.toggle("hidden");
   document.querySelector("#play").textContent = "NOUVELLE PARTIE →";
 };
-document.querySelector("#sound").onclick = () => {
-  muted = !muted;
+document.querySelector("#sound").onclick = async () => {
+  const muted = await sound.toggle();
   document.querySelector("#sound").textContent = muted ? "SON OFF" : "SON ON";
-  if (muted) audio.pause();
-  else {
-    beep("note");
-    if (audio.src && game.status === "running") audio.play().catch(() => {});
-  }
+  if(!muted) sound.play("note");
+  sound.sync(game.status);
 };
-let localURL;
-document.querySelector("#audio").onchange = (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  if (localURL) URL.revokeObjectURL(localURL);
-  localURL = URL.createObjectURL(file);
-  audio.src = localURL;
-  audio.loop = true;
-  if (!muted && game.status === "running") audio.play().catch(() => {});
+document.querySelector("#audio").onchange = async (e) => {
+  const file=e.target.files[0]; if(!file)return;
+  try {
+    await sound.import(file);
+    document.querySelector("#audio-status").textContent=file.name + " · privé sur cet appareil";
+    sound.sync(game.status);
+  } catch {document.querySelector("#audio-status").textContent="Impossible de lire ce fichier audio.";}
 };
-document.querySelector("#volume").oninput = (e) =>
-  (audio.volume = +e.target.value);
+document.querySelector("#volume").oninput=e=>sound.setVolume(+e.target.value);
+document.querySelector("#rhythm").onchange=e=>{sound.mode=e.target.value;sound.rhythm.reset();};
+document.querySelector("#bpm").onchange=e=>{sound.bpm=Math.min(240,Math.max(40,+e.target.value||120));e.target.value=sound.bpm;sound.rhythm.reset();};
 document.querySelector("#pre-speed").onchange = (e) => {
   document.querySelector("#speed").value = e.target.value;
 };
@@ -180,7 +142,14 @@ function frame(now) {
   if (network.role === "guest" && game.status === "running")
     overlay.classList.add("hidden");
   last = now;
-  for (const event of game.events.splice(0)) beep(event);
+  const events=game.events.splice(0);
+  network.queueSounds(events);
+  for (const event of events) sound.play(event);
+  const localPlayer=game.players[network.role === "guest"?1:0];
+  const lane=localPlayer.lane;
+  sound.update(Math.min((now-(sound.lastFrame ?? now))/1000,.1),game.status,lane,localPlayer.y);
+  sound.lastFrame=now;
+  renderer.personalNotes=sound.personal;
   renderer.draw(game);
   preview.draw(now);
   if (["over", "win"].includes(game.status)) {
@@ -190,7 +159,7 @@ function frame(now) {
     overlay.querySelector(".eyebrow").textContent =
       `${Math.floor(game.distance)} MÈTRES · ${game.score} POINTS`;
     document.querySelector("#play").textContent = "RECOMMENCER →";
-    audio.pause();
+    sound.sync(game.status);
   }
   requestAnimationFrame(frame);
 }

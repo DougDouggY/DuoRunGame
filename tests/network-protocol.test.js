@@ -70,3 +70,18 @@ test("invalid signalling codes rejected and closed channel pauses", () => {
   assert.equal(g.status, "paused");
   assert.equal(h.connected, false);
 });
+
+test("remote effects arrive once; local audio and personal rhythm never enter snapshots", () => {
+  const {g,h,remote}=pair();
+  h.queueSounds(['arrow','break']);h.tick(50);
+  assert.deepEqual(remote.events,['arrow','break']);remote.events=[];h.tick(100);
+  assert.deepEqual(remote.events,[]);
+  assert.equal('audio' in remote,false);assert.equal('personalNotes' in remote,false);
+  assert.equal(remote.baseSpeed,g.baseSpeed);
+});
+test("current transport sends at most 20 host snapshots per second",()=>{
+  const {h,a}=pair();let sent=0;
+  const original=a.send;a.send=data=>{sent++;original(data);};
+  for(let i=0;i<=1000;i++)h.tick(i);
+  assert.equal(sent,20);
+});

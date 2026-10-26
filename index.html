@@ -2,19 +2,19 @@
 <html lang="fr">
   <head>
     <meta charset="utf-8" />
-    <meta name="version" content="4.3.0" />
+    <meta name="version" content="4.4.0" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <link
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2212%22 fill=%22%23060d20%22/%3E%3Cpath d=%22M12 50V14L50 50V14%22 fill=%22none%22 stroke=%22%23ff39cc%22 stroke-width=%227%22/%3E%3C/svg%3E"
     />
-    <title>DUO RUSH — V4.3</title>
-    <link rel="stylesheet" href="style.css?v=4.3.0" />
+    <title>DUO RUSH — V4.4</title>
+    <link rel="stylesheet" href="style.css?v=4.4.0" />
   </head>
   <body>
     <header>
       <a class="brand" href="./"
-        >DUO<span>RUSH</span><small>V4.3 / CLASSIQUE</small></a
+        >DUO<span>RUSH</span><small>V4.4 / CLASSIQUE</small></a
       >
       <div class="live">● LOCAL CO-OP <span>2 JOUEURS</span></div>
       <nav>
@@ -54,12 +54,12 @@
             <label
               >VITESSE
               <select id="pre-speed">
-                <option value="180">Découverte · 180 px/s</option>
-                <option value="280">Lente · 280 px/s</option>
-                <option value="400">Moyenne · 400 px/s</option>
-                <option value="600">Rapide · 600 px/s</option>
-                <option value="800">Cauchemardesque · 800 px/s</option>
-              </select></label
+<option value="180">Découverte · 180 → 225 px/s</option>
+<option value="350">Lente · 350 → 438 px/s</option>
+<option value="600">Moyenne · 600 → 750 px/s</option>
+<option value="800">Rapide · 800 → 1000 px/s</option>
+<option value="1000">Cauchemardesque · 1000 → 1250 px/s</option>
+</select></label
             ><label
               ><input id="ai1" type="checkbox" checked /> INDAFRENCH : IA de
               test</label
@@ -69,7 +69,7 @@
           <button id="demo">DÉMO · DEUX IA</button
           ><button id="play" class="primary">ENTRER DANS LA VILLE →</button>
           <p class="hint">
-            Casque conseillé · Coop locale · Vitesse fixe Découverte
+            Casque conseillé · Coop locale · Départ doux · Rythme progressif · Son local
           </p>
         </div>
       </div>
@@ -80,12 +80,12 @@
         ><label
           >VITESSE
           <select id="speed">
-            <option value="180">Découverte</option>
-            <option value="280">Lente</option>
-            <option value="400">Moyenne</option>
-            <option value="600">Rapide</option>
-            <option value="800">Cauchemardesque</option>
-          </select></label
+<option value="180">Découverte</option>
+<option value="350">Lente</option>
+<option value="600">Moyenne</option>
+<option value="800">Rapide</option>
+<option value="1000">Cauchemardesque</option>
+</select></label
         ><label class="import"
           >IMPORT AUDIO
           <input id="audio" type="file" accept="audio/mpeg,audio/wav" /></label
@@ -100,9 +100,15 @@
         />
       </footer>
     </main>
+    <section class="local-audio" aria-label="Musique personnelle">
+      <span id="audio-status">Votre MP3/WAV reste sur cet appareil, y compris en coop.</span>
+      <label>NOTES PERSO <select id="rhythm"><option value="off">Désactivées</option><option value="bars">Toutes les 2 mesures · BPM</option><option value="kicks">Tous les 8 kicks · expérimental</option></select></label>
+      <label>BPM <input id="bpm" type="number" min="40" max="240" value="120" step="1"></label>
+      <small>Mesure à 4 temps · BPM à régler selon votre morceau · Compteur personnel séparé</small>
+    </section>
     <div class="bottom">
       <span>01 — NIGHT DISTRICT</span
-      ><span>SAUTEZ / GLISSEZ / SYNCHRONISEZ</span><span>BUILD 04.30</span>
+      ><span>SAUTEZ / GLISSEZ / SYNCHRONISEZ</span><span>BUILD 04.40</span>
     </div>
     <dialog id="network-panel">
       <h2>DUO À DISTANCE</h2>
@@ -161,6 +167,6 @@
       <p>Le jeu reste en pause pendant l’observation.</p>
       <button id="preview-close">FERMER</button>
     </dialog>
-    <script type="module" src="src/main.js?v=4.3.0"></script>
+    <script type="module" src="src/main.js?v=4.4.0"></script>
   </body>
 </html>

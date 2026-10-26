@@ -422,3 +422,9 @@ dialog button {
     font-size: 15px;
   }
 }
+
+.local-audio { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:12px; margin:0 auto; padding:8px 24px; max-width:1350px; color:#8295b5; font-size:11px; }
+.local-audio label { display:flex; align-items:center; gap:6px; }
+.local-audio input { width:60px; background:#0b1428; border:1px solid #293c5c; color:#d8edff; border-radius:4px; padding:7px; }
+.local-audio select { max-width:225px; }
+.local-audio small { color:#7084a5; }

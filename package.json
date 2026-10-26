@@ -1,6 +1,6 @@
 {
   "name": "duo-rush-v4",
-  "version": "4.3.0",
+  "version": "4.4.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,7 +9,8 @@
     "test:browser": "node tests/browser.mjs",
     "test:network": "node tests/network.mjs",
     "sprites:build": "node tools/build-sprites-v43.mjs",
-    "sprites:contacts": "node tools/contact-sheets-v43.mjs"
+    "sprites:contacts": "node tools/contact-sheets-v43.mjs",
+    "test:audio": "node tests/audio-browser.mjs"
   },
   "devDependencies": {
     "playwright": "^1.56.0"

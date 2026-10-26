@@ -1,4 +1,4 @@
-import { CONFIG, SEQUENCES, OBSTACLES } from "./config.js?v=4.3.0";
+import { CONFIG, SEQUENCES, OBSTACLES } from "./config.js?v=4.4.0";
 // Authored 6.8 s classic clusters; coop clusters reserve a safe return corridor
 // and append a classic exit pair. Actual encounter gaps are all <= 6.8 s.
 export function buildLevel(rounds = 2) {
@@ -72,7 +72,19 @@ export function buildLevel(rounds = 2) {
           y: 45,
         });
     }
-  return out;
+  const encounters = [...new Set(out.filter(o => OBSTACLES[o.type] && !OBSTACLES[o.type].mechanism).map(o => o.at))].sort((a,b)=>a-b);
+  const safeReturns = out.filter(o=>o.swap).map(o=>[o.at+.9,o.at+5.7]);
+  for(let i=0;i<encounters.length-1;i++) {
+    const at=encounters[i], end=encounters[i+1], progress=Math.min(1,at/70);
+    const desired=3.2-1.65*progress;
+    const pieces=Math.floor((end-at)/desired);
+    for(let j=1;j<pieces;j++) {
+      const t=at+(end-at)*j/pieces;
+      if(t<14 || safeReturns.some(([lo,hi])=>t>=lo&&t<=hi)) continue;
+      for(let lane=0;lane<2;lane++)out.push({id:++uid,at:t,lane,type:(j+lane+i)%2?'barrier':'crate',sequence:'flow',kind:'A',flow:true});
+    }
+  }
+  return out.sort((a,b)=>a.at-b.at || a.id-b.id);
 }
 export function validateLevel(level, speed) {
   const errors = [];
@@ -87,9 +99,9 @@ export function validateLevel(level, speed) {
       if (conflict) errors.push(`Retour encombré ${o.sequence}`);
     }
     const next = level.find(
-      (n) => n.lane === o.lane && n.at > o.at && OBSTACLES[n.type],
+      (n) => n.lane === o.lane && n.at > o.at && OBSTACLES[n.type] && !OBSTACLES[n.type].mechanism,
     );
-    if (next && (next.at - o.at) * speed < OBSTACLES[o.type].w + speed * 2)
+    if (next && next.at - o.at < Math.max(1.45, (OBSTACLES[o.type].w + 24) / speed + .35))
       errors.push("Espacement insuffisant");
   }
   return errors;

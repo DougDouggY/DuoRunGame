@@ -1,4 +1,4 @@
-import { CONFIG, OBSTACLES, WEAPON } from "./config.js?v=4.3.0";
+import { CONFIG, OBSTACLES, WEAPON } from "./config.js?v=4.4.0";
 export function driveAI(g, id) {
   if (g.status !== "running") return;
   const p = g.players[id],
@@ -33,8 +33,7 @@ export function driveAI(g, id) {
     .find((o) => o.x + (OBSTACLES[o.type]?.w || 0) > CONFIG.playerX - 12);
   if (!target) return;
   const d = OBSTACLES[target.type],
-    dx = target.x - CONFIG.playerX,
-    r = Math.max(1, g.speed / 135);
+    dx = target.x - CONFIG.playerX;
   if (id === 0 && p.weaponCD <= 0) {
     const bow = g.findBowTarget(p);
     if (bow) g.action(id, "weapon");

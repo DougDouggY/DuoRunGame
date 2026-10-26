@@ -1,4 +1,4 @@
-import { CHARACTER_ASSETS } from "./config.js?v=4.3.0";
+import { CHARACTER_ASSETS } from "./config.js?v=4.4.0";
 export async function loadAssets() {
   const paths = {
     neonRun: "assets/characters/v43/neon-run.png",
@@ -20,6 +20,7 @@ export async function loadAssets() {
     maw: "assets/monsters/maw.png",
     industrial: "assets/obstacles/industrial.png",
     city: "assets/backgrounds/city.png",
+    canal: "assets/backgrounds/canal.png",
     ground: "assets/backgrounds/ground.png",
     actions: "assets/characters/actions.png",
     neonActions: "assets/characters/neon-actions.png",

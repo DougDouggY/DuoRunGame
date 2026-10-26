@@ -11,10 +11,10 @@ const run = () => {
   return g;
 };
 const step = (g, t) => g.update(t);
-test("five fixed speeds, authored schedules validate", () => {
+test("five starting speeds, progressive authored schedules validate", () => {
   assert.deepEqual(
     SPEEDS.map((s) => s.value),
-    [180, 280, 400, 600, 800],
+    [180, 350, 600, 800, 1000],
   );
   for (const s of SPEEDS)
     assert.deepEqual(validateLevel(buildLevel(), s.value), []);

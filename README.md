@@ -1,4 +1,4 @@
-# DUO RUSH — V4.3
+# DUO RUSH — V4.4
 
 Runner coopératif Canvas 2D, deux routes visibles, ville nocturne illustrée conservée de la V3. NÉON IV (femme, veste noire et longs cheveux, électricité bleue) commence en haut ; INDAFRENCH (cagoule blanche, t-shirt noir, cyan/glitch) commence en bas.
 
@@ -23,7 +23,7 @@ Avant la partie, choisir la vitesse puis **Entrer dans la ville**. L’IA InDaFr
 
 Les commandes restent attachées au personnage après un échange. Le bouton ↻ recommence. L’aide affiche les touches ; lancer une nouvelle partie depuis l’aide remet le niveau à zéro. La pause conserve les timers. Perdre le focus met la partie hôte/locale en pause.
 
-**Cinq vitesses fixes :** Découverte 180, Lente 280, Moyenne 400, Rapide 600, Cauchemardesque 800 px/s. Choix avant la partie, aucune accélération ni modification en cours de partie. Les foulées, la physique et les espacements s’adaptent. Deux cycles de neuf séquences, **137,6 secondes actives** au total ; la distance dépend de la vitesse.
+**Cinq vitesses de départ :** Découverte 180, Lente 350, Moyenne 600, Rapide 800, Cauchemardesque 1 000 px/s. Les douze premières secondes restent à la vitesse choisie, puis elle monte continûment jusqu’à +25 % à 90 s (225 / 438 / 750 / 1 000 / 1 250 px/s). La pause suspend cette progression. La fonction de distance est intégrée pour déplacer chaque obstacle continûment, sans saut de position. Deux cycles de neuf séquences, **137,6 secondes actives** ; la densité augmente aussi avec la progression.
 
 ## SWITCH temporaire
 
@@ -39,11 +39,11 @@ L’IA confirme après **0,22 s**, pas immédiatement. Elle peut demander une co
 - **Néon IV, E :** dash spectral bleu, traînées, éclairs, silhouette lumineuse. Neutralise seulement les murs électriques pendant la durée visible du pouvoir. Cooldown 4 s.
 - **InDaFrench, E :** bouclier sorti devant lui, impact, onde et débris. Détruit seulement les barricades blindées compatibles. Cooldown 4 s.
 - **Néon IV, R :** arc électrique, sélection automatique de la cible valide la plus proche dans une portée de 1 100 px ; vrai projectile et collision sur la cible. Détruit drones, active interrupteurs et désactive la protection d’un géant. Un interrupteur pédagogique ouvre aussi un passage de l’autre route.
-- **InDaFrench, R :** épée à portée de 125 px, frappe active entre 0,40 et 0,64 s après l’action. Détruit les Mâchoires et les géants **déprotégés**. Un coup lancé trop tôt ou contre une protection échoue. Cooldown des armes 1,5 s.
+- **InDaFrench, R :** épée à portée de 125 px, frappe active entre 0,40 et 0,64 s après l’action. Détruit les Mâchoires et les géants **déprotégés**. Un coup lancé trop tôt ou contre une protection échoue. Cooldown épée 1,5 s ; arc de 0,9 s à environ 0,35 s selon la vitesse, calculé au début du tir.
 
 Trois cœurs, invulnérabilité après dégât, bouclier consommable, cœur, recharge et notes à score commun. Un KO termine la partie. Les pouvoirs ne remplacent pas les armes, et aucun personnage ne remplace l’autre.
 
-Les séquences classiques durent désormais **6,8 secondes**, contre 14 auparavant. Les séquences SWITCH réservent 10,6 s au retour sûr et ajoutent une paire d’obstacles à leur sortie : aucun intervalle entre rencontres ne dépasse 6,8 s.
+Les séquences principales conservent leur rythme pédagogique ; **64 obstacles classiques supplémentaires** remplissent progressivement les intervalles, pour **106 obstacles dangereux au total** (la créature géante commune compte une fois). Les passages classiques tardifs descendent à environ **1,7 s** entre rencontres. Les séquences SWITCH réservent leur corridor de retour : aucun obstacle n’est supprimé et aucun remplissage n’y est introduit.
 
 - **A :** pédagogie saut/glissade, pouvoirs propres, arc/drone/interrupteur, puis épée/Mâchoire.
 - **B :** blindage haut et caisse basse : échange requis pour attribuer le bouclier au bon parcours.
@@ -58,7 +58,7 @@ Bouton **Duo à distance**. L’hôte est Néon IV, l’invité InDaFrench. Chac
 2. Invité : coller ce code, cliquer rejoindre, envoyer son code de réponse à l’hôte.
 3. Hôte : coller la réponse et l’utiliser. Quand la connexion est établie, fermer le panneau et lancer la partie.
 
-WebRTC chiffré, connexion pair à pair, aucun serveur applicatif ou compte. L’hôte calcule les collisions et envoie l’état 20 fois/s ; l’invité transmet ses vraies actions. La pause est partagée, une déconnexion met la partie en pause. Les IA sont désactivées en connexion distante. Le service STUN public facilite la connexion directe ; **aucun relais TURN n’est fourni**, donc certains routeurs/réseaux empêchent la connexion. Aucun mode de réseau Internet universel n’est promis. Le test Chromium à deux pages est fourni, mais la connexion réelle est bloquée dans cet environnement : politique gérée `disable_non_proxied_udp`, aucun candidat ICE. Seul le protocole de messages est validé par des tests à canaux simulés. Un essai entre deux ordinateurs réels reste nécessaire.
+WebRTC chiffré, connexion pair à pair, aucun serveur applicatif ou compte. L’hôte calcule les collisions et envoie l’état au maximum 20 fois/s ; l’invité transmet ses vraies actions. La pause est partagée, une déconnexion met la partie en pause. Les IA sont désactivées en connexion distante. Le service STUN public facilite la connexion directe ; **aucun relais TURN n’est fourni**, donc certains routeurs/réseaux empêchent la connexion. Aucun mode de réseau Internet universel n’est promis. Le test Chromium à deux pages est fourni, mais la connexion réelle est bloquée dans cet environnement : politique gérée `disable_non_proxied_udp`, aucun candidat ICE. Seul le protocole de messages est validé par des tests à canaux simulés. Un essai entre deux ordinateurs réels reste nécessaire.
 
 ## Audio et capture
 
@@ -71,21 +71,22 @@ npm ci --ignore-scripts --cache /tmp/neon-npm
 npm test
 # Serveur actif et /usr/bin/chromium installé :
 npm run test:browser
+npm run test:audio
 npm run test:network
 ```
 
-- **29 tests de logique, sprites et protocole** : vitesses, séquences, durée exacte de 5 s, demande expirée, double confirmation, pause, cooldown/retour sûr, quatre capacités, timing épée, mécanisme lié, bonus, KO/reset.
+- **38 tests de logique, sprites, rythme et protocole** : vitesses, séquences, durée exacte de 5 s, demande expirée, double confirmation, pause, cooldown/retour sûr, quatre capacités, timing épée, mécanisme lié, bonus, KO/reset.
 - Une simulation fait finir le niveau aux deux IA **aux cinq vitesses, sans dégât ni impact absorbé par un bouclier**, avec les collisions normales. Aucun HP modifié par l’IA, aucune invincibilité ni suppression d’obstacles. Chaque échange et sa durée sont contrôlés. Cela démontre la solvabilité du catalogue actuel, pas de tous les patterns imaginables ni la facilité humaine.
 - Chromium : touches réelles, ressources, projectiles, pause, SWITCH/retour, cinq niveaux IA, démo, paysage et portrait, erreurs console/HTTP.
-- Protocole réseau : quatre tests des paquets, actions de l’invité, snapshots et pause sur canaux de données simulés. Le test de connexion WebRTC réelle est **SKIP** : la politique Chromium gérée de ce cloud interdit l’UDP direct et ne produit aucun candidat ICE. La négociation complète, le canal réel et la connexion Internet/NAT restent non validés.
+- Protocole réseau : six tests des paquets, actions de l’invité, snapshots et pause sur canaux de données simulés. Le test de connexion WebRTC réelle est **SKIP** : la politique Chromium gérée de ce cloud interdit l’UDP direct et ne produit aucun candidat ICE. La négociation complète, le canal réel et la connexion Internet/NAT restent non validés.
 
 Captures issues de la simulation réelle, sans arrangement des obstacles : `assets/screenshot-v4-landscape.png`, `assets/screenshot-v4-switch.png`, `assets/screenshot-v4-portrait.png`.
 
 ## Architecture et direction artistique
 
-`src/game.js` conserve la simulation indépendante du DOM et ajoute les états V4. `config.js` expose vitesses, hitboxes, mapping et capacités. `sequences.js` crée/vérifie le catalogue, `ai.js` exécute les actions réelles, `network.js` porte la connexion directe. `render.js` conserve les couches de ville/sol/pluie existantes et ajoute atlas, monstres, armes et particules ; `main.js` gère interface/clavier/audio.
+`src/game.js` conserve la simulation indépendante du DOM et ajoute les états V4. `config.js` expose vitesses, hitboxes, mapping et capacités. `sequences.js` crée/vérifie le catalogue, `ai.js` exécute les actions réelles, `network.js` porte la connexion directe. `render.js` conserve les couches de ville/sol/pluie existantes et ajoute atlas, monstres, armes et particules ; `main.js` gère interface/clavier ; `audio.js` synthétise les effets et lit le fichier personnel, `rhythm.js` suit les mesures/kicks et notes locales, `pace.js` porte la progression et les timings de tir.
 
-Les illustrations de ville et les poses existantes sont conservées. Nouveaux atlas RGBA : course, obstacles industriels, Mâchoire. Voir [assets/ART.md](assets/ART.md). Les animations ne remplacent pas les silhouettes par des formes simples. Les armes et effets sont des tracés Canvas superposés aux personnages ; le monstre possède deux repos, trois attaques, morsure, quatre étapes de destruction et deux états de géant.
+Les illustrations de ville et les poses existantes sont conservées. Nouveaux atlas RGBA : course, obstacles industriels, Mâchoire. Voir [assets/ART.md](assets/ART.md). Les animations ne remplacent pas les silhouettes par des formes simples. Les armes sont peintes dans leurs sprites avec la prise des mains, complétées par les effets Canvas ; le monstre possède deux repos, trois attaques, morsure, quatre étapes de destruction et deux états de géant.
 
 **Animations V4.2 :** la course conserve les dix poses acceptées et ajoute deux intermédiaires illustrés par personnage : 12 frames. Néon IV dispose de 16 poses d’arc, InDaFrench de 18 poses d’épée et 16 poses de bouclier. Les mains, poignées, armes et sangles sont dans le même dessin ; aucun arc ni bouclier indépendant n’est posé devant le buste. La foulée continue indépendamment de l’animation du haut du corps. Une pose d’arc dont la prise était déconnectée a été écartée et les fragments de cellules voisines ont été nettoyés.
 
@@ -118,4 +119,17 @@ Captures V4.2 : `assets/screenshot-v42-inspector.png` montre l’aperçu réel a
 
 Validation V4.3 : 29 tests Node et suite Chromium (24 images chargées, six aperçus, commandes, pause, SWITCH, armes, cinq parcours complets et format portrait), sans erreur de console/HTTP. Les tests de régression couvrent explicitement l’indépendance des oscillations à la vitesse. Les raccords anatomiques de quelques poses de course et des anciens états saut/glissade restent perfectibles ; il n’est pas revendiqué une disparition absolue de toute imperfection.
 
-Captures V4.3 : `assets/screenshot-v4-landscape.png`, `screenshot-v4-switch.png` et `screenshot-v4-portrait.png` proviennent du niveau en cours dans Chromium. `screenshot-v43-inspector.png` montre l’inspecteur réel ; `screenshot-v43-combat.png` est une scène de contrôle disposée pour montrer le dash, la prise d’épée, la liaison porte/interrupteur et le drone agrandi.
+Captures courantes V4.4 : `assets/screenshot-v4-landscape.png`, `screenshot-v4-switch.png` et `screenshot-v4-portrait.png` proviennent du niveau en cours dans Chromium. Les captures nommées v43 restent historiques. `screenshot-v43-inspector.png` montre l’inspecteur réel ; `screenshot-v43-combat.png` est une scène de contrôle disposée pour montrer le dash, la prise d’épée, la liaison porte/interrupteur et le drone agrandi.
+
+
+## V4.4 — rythme, audio personnel et deux quartiers
+
+L’arc garde exactement ses 16 poses et ses dessins V4.2. Sa durée et son cooldown sont capturés au début de chaque tir : environ 0,45 s avant relâchement en Découverte, jusqu’à 0,18 s à haute vitesse. La flèche est un projectile réel ; épée, dash, bouclier et SWITCH conservent leurs propres fenêtres.
+
+Activer **SON ON** pour les nouveaux bruitages synthétisés : flèche, épée, impact, explosion, mort de créature, électricité, bouclier, SWITCH et bonus. Aucun fichier sonore externe ni musique incluse. Les événements sonores partagés sont transmis à l’invité via les snapshots ; chaque appareil les joue à son propre volume.
+
+Chaque navigateur importe son propre MP3/WAV. Le fichier est lu par URL blob et reste sur cet appareil ; ni le fichier, ni l’analyse audio, ni le compteur personnel ne sont transmis par le réseau. Choisir « Notes perso → Toutes les 2 mesures » et régler le **BPM** du morceau (4 temps par mesure, donc une apparition tous les 8 temps). Le mode « Tous les 8 kicks » utilise les transitoires graves 40–180 Hz ; il est expérimental, sans promesse de transcription parfaite sur tous les morceaux. Les notes personnelles cyan apparaissent sur la musique locale, traversent la piste du personnage local et ont leur propre compteur avec contact de hauteur/piste réel ; les notes dorées du niveau et le score coop restent communs. Pause, boucles et changement de fichier ne créent pas de rafale de notes.
+
+Le haut garde sa ville d’origine ; le bas utilise une illustration distincte de canaux et voies suspendues (`assets/backgrounds/canal.png`), avec sa propre couche proche. Les personnages et les dessins acceptés sont conservés.
+
+Tests exécutés : **38 tests Node**, suite Chromium complète aux cinq vitesses avec accélération et densification (zéro impact), et suite audio séparée : deux imports WAV indépendants, zéro requête d’envoi, génération réelle de notes via BPM et via analyseur de kicks, pause/reprise/volume et **11 bruitages synthétisés rendus en PCM non silencieux**. Ce test valide la chaîne de synthèse, pas une appréciation subjective de mixage. La connexion WebRTC Internet reste expérimentale et n’est pas validée par les canaux simulés. Voir [NETWORK_BUDGET.md](NETWORK_BUDGET.md) pour les estimations Cloudflare.

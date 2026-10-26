@@ -9,6 +9,7 @@ const FIELDS = [
   "distance",
   "score",
   "speed",
+  "baseSpeed",
   "status",
   "switchState",
   "switching",
@@ -30,6 +31,7 @@ export class PeerSession {
     this.channel = null;
     this.connected = false;
     this.lastSend = 0;
+    this.pendingSounds = [];
     this.remoteAt = 0;
   }
   async init(role, iceServers = [{ urls: "stun:stun.l.google.com:19302" }]) {
@@ -91,6 +93,7 @@ export class PeerSession {
         typeof msg.state.time === "number"
       ) {
         for (const k of FIELDS) if (k in msg.state) this.game[k] = msg.state[k];
+        if (Array.isArray(msg.sounds)) this.game.events.push(...msg.sounds.filter(s => typeof s === "string").slice(0,128));
         this.remoteAt = performance.now();
       }
     };
@@ -155,8 +158,11 @@ export class PeerSession {
     if (
       this.channel?.readyState === "open" &&
       this.channel.bufferedAmount < 100000
-    )
+    ) {
       this.channel.send(JSON.stringify(msg));
+      return true;
+    }
+    return false;
   }
   action(key) {
     if (this.role === "guest") {
@@ -165,15 +171,20 @@ export class PeerSession {
     }
     this.game.action(0, key);
   }
+  queueSounds(events) {
+    if(this.role === "host" && this.connected) this.pendingSounds.push(...events.slice(0,128));
+    this.pendingSounds = this.pendingSounds.slice(-128);
+  }
   tick(now) {
     if (this.role === "host" && this.connected && now - this.lastSend >= 50) {
       const state = {};
       for (const k of FIELDS) state[k] = this.game[k];
-      this.send({ type: "state", state });
+      if(this.send({ type: "state", state, sounds: this.pendingSounds })) this.pendingSounds = [];
       this.lastSend = now;
     }
   }
   close() {
+    this.pendingSounds = [];
     if (this.game.status === "running") this.game.status = "paused";
     this.channel?.close();
     this.pc?.close();

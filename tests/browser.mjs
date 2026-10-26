@@ -21,10 +21,11 @@ try {
   await page.waitForFunction(() => window.duoRush);
   assert.equal(
     await page.evaluate(() => Object.keys(duoRush.renderer.assets).length),
-    24,
+    25,
   );
   assert.ok(!(await page.locator("body").innerText()).includes("SWONNI"));
   assert.ok(!(await page.title()).includes("NEON RUSH"));
+  assert.ok(await page.evaluate(()=>duoRush.renderer.assets.city.src!==duoRush.renderer.assets.canal.src));
   await page.click("#inspect");
   for (const [kind, count] of [
     ["arrow", 1],
@@ -103,7 +104,7 @@ try {
   await page.keyboard.press("/");
   assert.ok(await page.evaluate(() => duoRush.game.players[1].weapon > 0));
   // All four authored situations and real AI actions, sampled through full browser simulation.
-  for (const speed of [180, 280, 400, 600, 800]) {
+  for (const speed of [180, 350, 600, 800, 1000]) {
     const result = await page.evaluate((speed) => {
       const g = duoRush.game;
       g.reset();
@@ -155,7 +156,7 @@ try {
   assert.deepEqual(await page.evaluate(() => duoRush.game.ai), [true, true]);
   assert.deepEqual(errors, []);
   console.log(
-    "Chromium PASS: 24 images, V4 keys, weapons/projectile, Space-only request/confirm, 5s return/pause, 5 full AI levels, demo, landscape/switch/portrait. No console or HTTP errors.",
+    "Chromium PASS: 25 images, V4 keys, weapons/projectile, Space-only request/confirm, 5s return/pause, 5 full AI levels, demo, landscape/switch/portrait. No console or HTTP errors.",
   );
 } finally {
   await browser.close();

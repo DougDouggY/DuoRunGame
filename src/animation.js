@@ -1,5 +1,5 @@
-import {runCadence,frameBlend,swordFrame} from "./motion.js?v=4.3.0";
-import { WEAPON } from "./config.js?v=4.3.0";
+import {runCadence,frameBlend,swordFrame} from "./motion.js?v=4.4.0";
+import { WEAPON } from "./config.js?v=4.4.0";
 export const ANIMATION = {
   width: 384,
   height: 240,
@@ -21,7 +21,7 @@ export function animationFrames(p, time, speed) {
       Math.max(
         0,
         Math.floor(
-          (p.weaponAge / WEAPON.duration) * ANIMATION.weaponFrames[p.id],
+          (p.weaponAge / (p.weaponDuration || WEAPON.duration)) * ANIMATION.weaponFrames[p.id],
         ),
       ),
     ),
