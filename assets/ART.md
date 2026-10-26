@@ -58,3 +58,8 @@ Les atlas `v43/neon-run.png`, `inda-run.png`, `inda-weapon.png` dérivent des re
 ## V4.4 — second quartier
 
 `backgrounds/canal.png` est une illustration générée distincte, inspectée puis utilisée sur la route inférieure : canal industriel, voies suspendues, conduites et vitrines cyan/magenta sous la pluie. Le haut conserve `city.png`. Les personnages, arcs, épées, boucliers et dash acceptés restent inchangés ; seul le timing du tir d’arc est accéléré. Les oscillations ambiantes restent indépendantes du défilement.
+
+
+## V4.4.1 — quartier haut au niveau du canal
+
+`backgrounds/rooftops.png` est une nouvelle illustration générée à partir de la référence du canal pour conserver sa qualité, sa définition et sa richesse de façades. Elle représente un quartier supérieur de terrasses et passerelles, dominant magenta/violet, distinct du canal cyan du bas. Les deux images sont utilisées dans les couches défilantes du renderer ; les assets de personnages et obstacles sont inchangés. L’illustration a été inspectée seule, puis dans la scène jouable en paysage et portrait.

@@ -1,5 +1,5 @@
-import {runCadence,frameBlend,swordFrame} from "./motion.js?v=4.4.0";
-import { WEAPON } from "./config.js?v=4.4.0";
+import {runCadence,frameBlend,swordFrame} from "./motion.js?v=4.4.1";
+import { WEAPON } from "./config.js?v=4.4.1";
 export const ANIMATION = {
   width: 384,
   height: 240,

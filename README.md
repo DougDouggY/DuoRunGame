@@ -1,4 +1,4 @@
-# DUO RUSH — V4.4
+# DUO RUSH — V4.4.1
 
 Runner coopératif Canvas 2D, deux routes visibles, ville nocturne illustrée conservée de la V3. NÉON IV (femme, veste noire et longs cheveux, électricité bleue) commence en haut ; INDAFRENCH (cagoule blanche, t-shirt noir, cyan/glitch) commence en bas.
 
@@ -133,3 +133,10 @@ Chaque navigateur importe son propre MP3/WAV. Le fichier est lu par URL blob et 
 Le haut garde sa ville d’origine ; le bas utilise une illustration distincte de canaux et voies suspendues (`assets/backgrounds/canal.png`), avec sa propre couche proche. Les personnages et les dessins acceptés sont conservés.
 
 Tests exécutés : **38 tests Node**, suite Chromium complète aux cinq vitesses avec accélération et densification (zéro impact), et suite audio séparée : deux imports WAV indépendants, zéro requête d’envoi, génération réelle de notes via BPM et via analyseur de kicks, pause/reprise/volume et **11 bruitages synthétisés rendus en PCM non silencieux**. Ce test valide la chaîne de synthèse, pas une appréciation subjective de mixage. La connexion WebRTC Internet reste expérimentale et n’est pas validée par les canaux simulés. Voir [NETWORK_BUDGET.md](NETWORK_BUDGET.md) pour les estimations Cloudflare.
+
+
+## V4.4.1 — quartier supérieur réillustré
+
+La piste haute utilise désormais `assets/backgrounds/rooftops.png` : terrasses techniques, tours vitrées, passerelles, façades magenta et reflets de pluie. L’illustration a la même résolution et le même traitement que le quartier des canaux du bas, qui est conservé. Le décor reste défilant en parallaxe, derrière les obstacles et personnages ; il ne s’agit pas d’un écran concept collé au jeu. L’ancien fichier `city.png` reste disponible comme ressource historique. Aucun timing de gameplay, personnage ou arme n’a été modifié dans cette révision.
+
+La comparaison entre tour par tour et coop temps réel ainsi qu’un exemple chiffré de deux heures pour deux joueurs sont détaillés dans [NETWORK_BUDGET.md](NETWORK_BUDGET.md). Aucun backend Cloudflare n’est ajouté par ce changement visuel.

@@ -2,6 +2,26 @@
 
 Le réseau actuel est WebRTC pair à pair, simulation sur l’ordinateur hôte. `PeerSession.tick()` plafonne les snapshots à 20/s ; l’invité envoie seulement ses actions. Il n’existe pas encore de backend Cloudflare dans le dépôt. Mettre les fichiers statiques sur Cloudflare Pages ne transforme pas ces paquets directs en messages Workers.
 
+## Comparaison avec un jeu au tour par tour
+
+Pour Les Gourmands, une action de joueur peut correspondre à une requête HTTP ; le serveur renvoie ensuite le résultat du tour. Dans DUO RUSH, il faut maintenir les deux parties synchronisées plus souvent, mais **une image affichée n’est pas une requête réseau**. Un appui peut devenir un petit message « saut à telle heure », puis chaque navigateur calcule les images de l’animation. Des corrections périodiques gardent les deux vues cohérentes.
+
+Un **WebSocket** est une connexion ouverte qui transporte ensuite de nombreux petits messages. C’est un mode de communication différent d’une nouvelle requête HTTP à chaque action ou image. Les 100 000 requêtes Workers/jour ne correspondent donc pas automatiquement à 100 000 messages de jeu.
+
+Exemple prudent pour **une salle de deux joueurs pendant deux heures** :
+
+| Élément | Estimation avec relais DO |
+| --- | ---: |
+| États envoyés par l’hôte à 20/s | 144 000 messages entrants |
+| Actions invité supposées à 2/s en moyenne | 14 400 messages entrants |
+| Total entrant | 158 400 messages |
+| Équivalent de facturation à 20 messages pour 1 requête | 7 920 requêtes, plus connexions/autres appels |
+| Durée si le DO reste actif pendant les deux heures | environ 900 GB-s |
+
+À comparer aux allocations documentées de 100 000 requêtes et 13 000 GB-s par jour pour les DO Free. Ce calcul permet de dimensionner un usage privé ; il ne remplace pas la vérification du quota effectif et des autres usages sur le futur déploiement. Les autres jeux du compte peuvent aussi consommer les allocations partagées. Aucune écriture en base à chaque image n’est nécessaire dans l’architecture envisagée.
+
+Le flux d’état actuel représente environ 195 Mo/h de données avant entêtes/compression : **environ 390 Mo pour deux heures** d’envoi de l’hôte et de réception de l’invité, auxquels s’ajoutent les petits messages de contrôle. Il ne s’agit ni de vidéo, ni d’un transfert de la musique. Le format d’état peut encore être allégé. En WebRTC direct, Cloudflare ne reçoit pas ce flux ; prévoir toutefois une solution de relais pour les réseaux où le pair à pair échoue.
+
 Hypothèses d’une salle privée de deux personnes, sans stockage par frame, reconnexions ni autres utilisateurs :
 
 | Architecture | Messages de jeu entrants dans le relais / heure | Requêtes de calcul DO équivalentes selon ratio 20:1 |

@@ -1,9 +1,9 @@
-import {GameAudio} from "./audio.js?v=4.4.0";
-import { AnimationPreview } from "./preview.js?v=4.4.0";
-import { PeerSession } from "./network.js?v=4.4.0";
-import { Game } from "./game.js?v=4.4.0";
-import { Renderer } from "./render.js?v=4.4.0";
-import { loadAssets } from "./assets.js?v=4.4.0";
+import {GameAudio} from "./audio.js?v=4.4.1";
+import { AnimationPreview } from "./preview.js?v=4.4.1";
+import { PeerSession } from "./network.js?v=4.4.1";
+import { Game } from "./game.js?v=4.4.1";
+import { Renderer } from "./render.js?v=4.4.1";
+import { loadAssets } from "./assets.js?v=4.4.1";
 const canvas = document.querySelector("canvas"),
   overlay = document.querySelector("#overlay");
 const game = new Game();
